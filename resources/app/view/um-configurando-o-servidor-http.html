@@ -1,0 +1,152 @@
+<h2 class="item-titulo titulo_desc_move">
+    Configurando o servidor HTTP
+</h2>
+<div class="content-area">
+<p>O primeiro passo na programação de uma aplicação Node é criar um servidor HTTP, que funcionará respondendo às requisições dos clientes. Será a execução desta tarefa que dedicaremos essa seção da documentação.
+</p>
+
+<h3>Visão geral </h3>
+<p>Criar um servidor HTTP no Node que possua a funcionalidade básica de ouvir uma requisição e respondê-la é uma tarefa simples e que pode ser realizada com algumas poucas linhas de código. Assim como demonstra o exemplo a seguir, primeiro precisamos obter o módulo <span class='lf-badge'>http</span> e depois invocar <span class='lf-badge'>createServer()</span>, criando assim um objeto <span class='lf-badge'>server</span>. Este, por sua vez, é capaz de responder as requisições dos clientes de acordo com algumas configurações programadas de forma semelhante a exemplificada abaixo:</p>
+
+<pre><code class="js">require('http').createServer(function(req, res) [curly_open]
+  res.writeHead(200, [curly_open]'Content-Type': 'text/plain'[curly_close]);
+  res.end(“Olá Mundo!”);
+[curly_close]).listen(3000);</code></pre>
+
+<p>Contudo, embora o servidor HTTP acima consiga realizar sua tarefa fundamental, que é responder a requisições, ele não consegue distinguir entre elas. Para tal poderíamos estender as suas funcionalidades utilizando apenas JavaScript, fazendo com que ele compreenda as URIs solicitadas pelo cliente, enviando respostas diferentes de acordo com cada uma delas. Por exemplo, podemos utilizar um bloco de controle a partir do qual a URI seja identificada e, de acordo com ela, alguma função específica seja executada:</p>
+
+<pre><code class="js">switch (uri) [curly_open]
+  case "":
+    carrega_home();
+    break;
+  case "/about":
+    carrega_sobre();
+    break;
+  default:
+    erro_404();
+    break;
+[curly_close]</code></pre>
+
+<p>Embora funcional, um dos motivos de não seguirmos essa abordagem é que ela torna difícil tanto programar uma aplicação web quanto estendê-la ao longo do tempo. Para auxiliar na tarefa de criar uma aplicação web usaremos o Express, um framework amplamente utilizado pela comunidade de programadores e que possui o necessário para a criação de qualquer aplicação web, incluindo APIs RESTful.</p>
+
+<h3>Na prática</h3>
+
+<p>Programar com o Express consiste em criar uma aplicação com a declaração <span class='lf-badge'>const app = express()</span> e configurá-la para compreender os dados enviados em formato JSON, bem como responder ao cliente utilizando esse mesmo tipo de arquivo. Além disso, devemos informar ao framework quais são as rotas da aplicação, neste caso os endpoints da API, bem como a forma que ele tratará erros 404 e 500. Vejamos aqui como realizar essas configurações:
+</p>
+
+<pre><code class="js">  const express = require('express')
+  const http = require('http')
+  const status = require('http-status')
+  const spoilersRoute = require('./routes/spoilers')
+  const sequelize = require('./database/database')
+   
+  const app = express()
+   
+  app.use(express.json())
+   
+  app.use('/api', spoilersRoute)
+   
+  app.use((request, response, next) =&gt; [curly_open]
+      response.status(status.NOT_FOUND).send()
+  [curly_close])
+   
+  app.use((error, request, response, next) =&gt; [curly_open]
+      response.status(status.INTERNAL_SERVER_ERROR).json([curly_open] error [curly_close])
+  [curly_close])
+   
+  sequelize.sync([curly_open] force: true [curly_close]).then(() =&gt; [curly_open]
+      const port = process.env.PORT || 3000
+      
+      app.set('port', port)
+      
+      const server = http.createServer(app)
+   
+      server.listen(port)
+[curly_close])</code></pre>
+
+<p>Vejamos passo a passo como o código acima foi escrito e qual o propósito das linhas que implementam sua principal funcionalidade.</p>
+
+<ul><li><b>Linhas 1 a 5</b>: No início do
+arquivo app.js importamos todos os módulos necessários para a configuração do
+servidor HTTP e da aplicação Express, sobre a qual falamos a seguir. Não se
+preocupe agora com os módulos <span class='lf-badge'><b>/routes/spoilers</b></span>
+e <span class='lf-badge'><b>/database/database</b></span> porque eles
+serão criados em breve:
+
+<pre><code class="js">const express = require('express')
+const http = require('http')
+const status = require('http-status')
+const spoilersRoute = require('./routes/spoilers')
+const sequelize = require('./database/database')</code></pre>
+</li>
+
+<li><b>Linha 7</b>: Aqui criamos uma
+aplicação Express a partir de uma chamada a função <span class='lf-badge'><b>express()</b></span>, que importamos do módulo express:
+
+<pre><code class="js">const app = express();</code></pre>
+</li>
+
+<li><b>Linha 9</b>: Quando enviamos
+uma requisição para a API que contém um JSON em seu corpo, esses dados podem
+ser acessados em request.body, contudo, ele é undefined, por padrão. Para
+conseguirmos receber dados em formato JSON precisamos de um middleware que faça
+a conversão de texto para esse formato de dado. Aqui utilizamos a solução nativa
+do Express para essa conversão, obtida a partir de uma chamada para <span class='lf-badge'><b>express.json()</b></span>:
+
+<pre><code class="js">app.use(express.json());</code></pre>
+</li>
+
+<li><b>Linha 11</b>: Nessa linha são
+registradas as rotas da aplicação. Para saber mais sobre esse ponto da
+aplicação consulte a documentação de roteamento aqui na documentação:
+
+<pre><code class="js">app.use("/api", spoilersRoute);</code></pre>
+</li>
+
+<li><b>Linhas 13 a 15</b>: Esse é o
+middleware de tratamento de erros 404 da aplicação. Sempre que uma requisição
+for feita para um recurso que não existe na API, esse middleware enviará para o
+cliente uma resposta vazia com o código HTTP 404 NOT FOUND:
+
+<pre><code class="js">app.use((request, response, next) =&gt; [curly_open]
+  response.status(status.NOT_FOUND).send();
+[curly_close]);</code></pre>
+</li>
+
+<li><b>Linhas 17 a 19</b>: Aqui temos o
+último middleware declarado na aplicação, o qual se destina ao tratamento de
+erros 500. Em qualquer outro middleware da aplicação, sempre que executamos a
+função <span class='lf-badge'><b>next()</b></span>, passando para ela um
+objeto, o Express entenderá que o middleware de erro deve ser invocado. O erro
+utilizado na função <span class='lf-badge'><b>next()</b></span> é passado
+para o primeiro parâmetro deste middleware. Com essa informação, retornamos
+para o cliente o código <span class='lf-badge'><b>HTTP 500
+INTERNAL SERVER ERROR</b></span>, com um objeto que descreve o erro ocorrido e cuja
+primeira propriedade chama-se <span class='lf-badge'><b>error</b></span>:
+
+<pre><code class="js">app.use((error, request, response, next) =&gt; [curly_open]
+  response.status(status.INTERNAL_SERVER_ERROR).json([curly_open] error [curly_close]);
+[curly_close]);</code></pre>
+</li>
+
+<li><b>Linhas 21 a 26</b>. Nesse ponto,
+invocamos o método <span class='lf-badge'><b>sync()</b></span> do
+Sequelize para que os dados dos modelos declarados na aplicação sejam
+sincronizados com o banco de dados. O objeto passado como parâmetro, com a
+propriedade <span class='lf-badge'><b>force</b></span>, se encarrega de
+dizer se cada tabela deve ser recriada. Uma vez que sync() retorna uma promise,
+será no método <span class='lf-badge'><b>then()</b></span> desse objeto
+que faremos o servidor iniciar seu ciclo de execução:
+
+<pre><code class="js">sequelize.sync([curly_open] force: true [curly_close]).then(() =&gt; [curly_open]
+  const port = process.env.PORT || 3000;
+ 
+  app.set("port", port);
+ 
+  const server = http.createServer(app);
+ 
+  server.listen(port);
+[curly_close]);</code></pre>
+</li></ul>
+
+</div>

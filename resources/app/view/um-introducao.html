@@ -1,0 +1,162 @@
+<h2 class="item-titulo titulo_desc_move">
+    Introdução
+</h2>
+<div class="content-area">
+
+<p>Nessa documentação apresentamos como criar uma API RESTFul utilizando o
+Node.js e um cliente SPA em React. Ao concluí-la você conhecerá alguns dentre os principais frameworks
+comumente utilizados em conjunto dessa tecnologia, bem como o passo a passo
+para criar aplicações utilizando boas práticas.</p>
+
+<h3>Conhecendo a aplicação</h3>
+
+<p>A API RESTful que criaremos passo a passo nessa documentação é destinada
+ao cadastro de spoilers. Ela contará com a implementação das operações de CRUD
+sobre uma entidade e também recursos fundamentais como validação e paginação.</p>
+
+<p>Assim como já pode ser deduzido, o principal dado que será manipulado na
+aplicação é o Spoiler, o qual modelamos conforme o exemplo a seguir:</p>
+
+<pre><code class="js">[curly_open]
+    “id”: 1,
+    "titulo": "Hereditário",
+    "espoliador": "edrd",
+    "descricao": "Charlie é Paimon."
+[curly_close]</code></pre>
+
+<p>Para permitir que esse dado seja persistido, criaremos ao redor dele um
+controller, um model e um repositório. O controller será acessado a partir de
+um sistema de roteamento, que fará a conexão entre as URIs utilizadas para identificar
+o recurso spoiler e o método do controller que processará a requisição. No
+controller, usaremos o repositório para realizar a busca de spoilers, usando
+paginação quando necessário, bem como para incluir, editar e excluir esse
+recurso no servidor.</p>
+
+<p>Na tabela abaixo temos os endpoints utilizadas pelos clientes para se
+conectarem a API:</p>
+
+<div class="table-area"><table border="1">
+ <tr>
+ <td>
+ Método
+ </td>
+<td>
+ endpoint
+ </td>
+ </tr>
+
+ <tr>
+ <td>
+ POST 
+ </td>
+<td>
+ localhost:3000/api/spoilers
+ </td>
+ </tr>
+ <tr>
+ <td>
+ GET
+ </td>
+<td>
+ localhost:3000/api/spoilers/?limite=1&amp;pagina=0
+ </td>
+ </tr>
+ <tr>
+ <td>
+ GET
+ </td>
+<td>
+ localhost:3000/api/spoilers/1
+ </td>
+ </tr>
+ <tr>
+ <td>
+ GET
+ </td>
+<td>
+ localhost:3000/api/spoilers
+ </td>
+ </tr>
+ <tr>
+ <td>
+ PUT
+ </td>
+<td>
+ localhost:3000/api/spoilers/1
+ </td>
+ </tr>
+ <tr>
+ <td>
+ DELETE
+ </td>
+<td>
+ localhost:3000/api/spoilers/1
+ </td>
+ </tr>
+</table></div>
+
+
+<h3>Tecnologias utilizadas</h3>
+
+<p>Usaremos nessa aplicação o Node.js na versão 8 ou posterior. Como
+framework para a criação da API usaremos o Express, um dos mais utilizados pela
+comunidade de programadores no desenvolvimento de aplicações web em geral,
+incluindo APIs RESTful.</p>
+
+<p>Como banco de dados usaremos o MySQL, um banco de dados relacional
+amplamente utilizado. Em conjunto, aprenderemos como acessá-lo utilizando o ORM
+Sequelize, que suporta os bancos de dados relacionais mais utilizados
+atualmente como SQL Server, PostgreSQL, SQLite e o MySQL.</p>
+
+<h3>Configurando o projeto</h3>
+
+<p>Graças ao NPM, a configuração de um projeto Node é simplificada, de modo
+que podemos criar um arquivo chamado package.json com o conteúdo abaixo em um
+diretório qualquer e invocar o comando <span class='lf-badge'><b>npm
+install</b></span> nesse diretório:</p>
+
+<pre><code class="js">[curly_open]
+  "name": "spoiler",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": [curly_open]
+    "start": "node ./src/app.js"
+  [curly_close],
+  "dependencies": [curly_open]
+    "express": "^4.16.3",
+    "http-status": "^1.2.0",
+    "mysql2": "^1.6.1",
+    "sequelize": "^4.39.0"
+  [curly_close]
+[curly_close]</code></pre>
+
+ 
+
+<p>Ao fazer isso, serão lidas as dependências do projeto e um a um seus
+pacotes serão adicionados ao diretório <span class='lf-badge'><b>node_modules</b></span>.</p>
+
+<h3>Conhecendo a aplicação cliente</h3>
+
+<p>Neste projeto criaremos uma aplicação cliente utilizando o React para a
+administração de uma API de Spoilers. Nela será possível adicionar, editar,
+listar e remover Spoilers, enviando essas requisições para a API RESTFul via
+Fetch API.</p>
+
+<p>Nas imagens a seguir vemos a
+aplicação em funcionamento:</p>
+
+<div class="theme-default">
+    <div id="slide-comp" class="nivoSlider">
+
+        <img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/fig1.png" alt="Tela inicial contendo a listagem de Spoilers">
+        <img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/image2.png" alt="Tela de adição de Spoilers">
+         <img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/image3.png" alt="Tela de edição de Spoilers">
+         <img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/image4.png" alt="Tela de remoção de Spoilers">
+</div></div>
+
+<h3>Tecnologias utilizadas</h3>
+
+<p>Para criar essa aplicação cliente utilizamos o React e o React Router. O
+estilo visual dos elementos foi feito com o Bootstrap 4.</p>
+
+</div>

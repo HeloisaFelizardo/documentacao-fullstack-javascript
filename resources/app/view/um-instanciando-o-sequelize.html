@@ -1,0 +1,90 @@
+<h2 class="item-titulo titulo_desc_move">
+	Instanciando o Sequelize
+</h2>
+<div class="content-area">
+<p>Agora, com os dados que registramos no módulo /src/config/config,
+criaremos um instância do Sequelize que será compartilhada com o restante da
+aplicação a partir do módulo <span class='lf-badge'><b>/src/database/database</b></span>.</p>
+
+<h3>Visão geral</h3>
+
+<p>Utilizando o princípio da divisão de responsabilidades, separaremos a
+configuração do banco de dados da instância do Sequelize responsável por
+acessá-lo, criando um novo módulo no arquivo <span class='lf-badge'><b>database.js</b></span>. Dessa forma, podemos preparar a aplicação para
+utilizar mais de um banco de dados no futuro, bem como tornar a sua manutenção
+mais segura, pois não corremos o risco de alterar as configurações de acesso ao
+banco de dados por engano ao modificar a forma como o Sequelize é instanciado.</p>
+
+<h3>Na prática</h3>
+
+<p>No módulo /src/database/database criaremos um nova instância do
+Sequelize, a qual será configurada com as credenciais de acesso ao banco de
+dados obtidas do módulo /src/config/config. Essa instância será exportada pelo
+módulo /src/database/database e, por consequência, retornada ao importá-lo,
+provendo para a aplicação os métodos utilizados para acessar o banco de dados:</p>
+
+<pre><code class="js">  const Sequelize = require("sequelize");
+   
+  const environment = process.env.NODE_ENV || "development";
+   
+  const config = require("../config/config.js")[environment];
+   
+  const sequelize = new Sequelize(
+    config.database.name,
+    config.database.user,
+    config.database.password,
+    [curly_open]
+      host: config.database.host,
+      dialect: config.database.dialect
+    [curly_close]
+  );
+   
+  module.exports = sequelize;</code></pre>
+
+<p>Vejamos passo a passo como o código acima foi escrito e qual o propósito das linhas que implementam sua principal funcionalidade.</p>
+
+<ul><li><b>Linha 1</b>: Para instanciar
+um novo Sequelize precisamos primeiro importar o módulo sequelize, que expõe a
+API que utilizamos para acesso ao banco de dados: 
+
+<pre><code class="js">const Sequelize = require("sequelize");</code></pre>
+</li>
+
+<li><b>Linhas 3 a 5</b>: Verificamos se a
+variável de ambiente <span class='lf-badge'><b>NODE_ENV</b></span> existe
+para que as informações de conexão com o banco de dados sejam carregadas de
+acordo com o seu valor. Caso essa variável não exista, passamos a considerar
+que as informações que devem ser utilizadas são aquelas contidas na propriedade
+<span class='lf-badge'><b>development</b></span> do módulo
+/src/config/config: 
+
+<pre><code class="js">  const environment = process.env.NODE_ENV || "development";
+
+
+  const config = require("../config/config.js")[environment];</code></pre></li>
+
+<li><b>Linhas 7 a 15</b>: Aqui criamos um Sequelize, passando para o
+seu construtor quatro parâmetros, sendo os três primeiros as credenciais para
+conexão com o banco de dados e o quarto um objeto de opções no qual informamos
+na propriedade host o endereço de conexão, bem como qual SGBD será utilizado na
+propriedade <span class='lf-badge'><b>dialect</b></span>. Tal propriedade
+pode receber como valor qualquer SGBD suportado pelo Sequelize, sendo seus
+valores válidos <span class='lf-badge'><b>mysql</b></span>, <span class='lf-badge'><b>sqlite</b></span>, <span class='lf-badge'><b>postgres</b></span> ou <span class='lf-badge'><b>mssql</b></span>:
+
+<pre><code class="js">  const sequelize = new Sequelize(
+    config.database.name,
+    config.database.user,
+    config.database.password,
+    [curly_open]
+      host: config.database.host,
+      dialect: config.database.dialect
+    [curly_close]
+  );</code></pre>
+</li>
+<li><b>Linha 17</b>: Por fim,
+exportamos o objeto configurado sequelize para ser utilizado pelo restante da
+aplicação:
+
+<pre><code class="js">module.exports = sequelize;</code></pre></li></ul>
+
+</div>

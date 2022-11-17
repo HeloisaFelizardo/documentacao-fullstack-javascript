@@ -1,0 +1,185 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Edição de Spoiler
+</h2>
+<div class="content-area">
+<p>Em aplicações que implementam as funções de um CRUD, sigla para Create/Read/Update/Delete, criar e editar recursos são funções similares em muitos pontos. Por essa razão, parte desse código parecerá familiar. Contudo, será feita uma explicação sobre as suas principais partes</p>
+
+<h3>Visão geral</h3>
+<p>Muitas aplicações que implementam as funções de um CRUD adicionam criação e edição em uma mesmo local. Aqui separamos essas funções em dois componentes. Embora elas sejam parecidas, com o tempo e não raras as vezes elas passam a implementar modificações diferentes. Considere que tenhamos que bloquear certos dados de serem modificados, como o que informa a autoria do Spoilers, assim como vemos na <b>Figura 1</b>.</p>
+<figure><img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/edicao.png" alt="Página de edição de Spoilers com nome do criador desabilitado"><figcaption><b>Figura 1</b>. Página de edição de Spoilers com nome do criador desabilitado</figcaption></figure>
+<p>Caso edição e criação fossem a mesma página, teríamos um código difícil de ler, cheio de estruturas condicionais para decidir o que deve ser modificado ou não, tornando o código difícil de manter com o tempo.  Por esse motivo, aqui quando falamos sobre criação e edição tratamos de componentes diferentes.</p>
+<h3>Na prática</h3>
+
+<p>Vejamos o código de edição de Spoilers presente no componente abaixo:</p>
+
+<pre><code class="js">import React, [curly_open] Component [curly_close] from "react";
+import [curly_open] Redirect [curly_close] from "react-router-dom";
+
+class EditarSpoiler extends Component [curly_open]
+  constructor(props) [curly_open]
+    super(props);
+
+    this.state = [curly_open]
+      spoiler: [curly_open]
+        espoliador: "",
+        descricao: "",
+        titulo: ""
+      [curly_close],
+      erro: null,
+      redirect: false
+    [curly_close];
+  [curly_close]
+
+  exibeErro() [curly_open]
+    const [curly_open] erro [curly_close] = this.state;
+
+    if (erro) [curly_open]
+      return (
+        &lt;div className="alert alert-danger" role="alert"&gt;
+          Erro de conexão com o servidor
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]
+
+  componentDidMount() [curly_open]
+    const [curly_open] id [curly_close] = this.props.match.params;
+
+    fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`)
+      .then(data =&gt; [curly_open]
+        data.json().then(data =&gt; [curly_open]
+          if (data.error) [curly_open]
+            this.setState([curly_open] erro: data.error [curly_close]);
+          [curly_close] else [curly_open]
+            this.setState([curly_open] spoiler: data [curly_close]);
+          [curly_close]
+        [curly_close]);
+      [curly_close])
+      .catch(erro =&gt; this.setState([curly_open] erro: erro [curly_close]));
+  [curly_close]
+
+  render() [curly_open]
+    const [curly_open] redirect [curly_close] = this.state;
+
+    if (redirect) [curly_open]
+      return &lt;Redirect to="/" /&gt;;
+    [curly_close] else [curly_open]
+      return (
+        &lt;form onSubmit=[curly_open]this.handleSubmit[curly_close]&gt;
+          [curly_open]this.exibeErro()[curly_close]
+
+          &lt;fieldset&gt;
+            &lt;legend&gt;Editar Spoiler&lt;/legend&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="espoliador"&gt;Espoliador&lt;/label&gt;
+              &lt;input
+                type="text"
+                className="form-control-plaintext"
+                id="espoliador"
+                name="espoliador"
+                placeholder="zededeus"
+                minLength="2"
+                maxLength="40"
+                value=[curly_open]this.state.spoiler.espoliador[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+                disabled
+              /&gt;
+            &lt;/div&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="titulo"&gt;Título&lt;/label&gt;
+              &lt;input
+                type="text"
+                className="form-control"
+                id="titulo"
+                name="titulo"
+                aria-describedby="tituloAjuda"
+                placeholder="Hereditário"
+                minLength="2"
+                maxLength="255"
+                value=[curly_open]this.state.spoiler.titulo[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+              /&gt;
+              &lt;small id="tituloAjuda" className="form-text text-muted"&gt;
+                Um título pode ser um filme, série, livro...
+              &lt;/small&gt;
+            &lt;/div&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="descricao"&gt;Descrição&lt;/label&gt;
+              &lt;textarea
+                className="form-control"
+                id="descricao"
+                name="descricao"
+                placeholder="Charlie é Paimon"
+                minLength="2"
+                maxLength="255"
+                value=[curly_open]this.state.spoiler.descricao[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+              /&gt;
+            &lt;/div&gt;
+            &lt;button type="submit" className="btn btn-primary"&gt;
+              Enviar
+            &lt;/button&gt;
+          &lt;/fieldset&gt;
+        &lt;/form&gt;
+      );
+    [curly_close]
+  [curly_close]
+
+  handleInputChange = event =&gt; [curly_open]
+    const target = event.target;
+    const name = target.name;
+    const value = target.value;
+
+    this.setState(prevState =&gt; ([curly_open]
+      spoiler: [curly_open] ...prevState.spoiler, [name]: value [curly_close]
+    [curly_close]));
+  [curly_close];
+
+  handleSubmit = event =&gt; [curly_open]
+    const [curly_open] id [curly_close] = this.state.spoiler;
+
+    fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`, [curly_open]
+      method: "put",
+      body: JSON.stringify(this.state.spoiler),
+      headers: [curly_open]
+        "Content-Type": "application/json"
+      [curly_close]
+    [curly_close])
+      .then(data =&gt; [curly_open]
+        if (data.ok) [curly_open]
+          this.setState([curly_open] redirect: true [curly_close]);
+        [curly_close] else [curly_open]
+          data.json().then(data =&gt; [curly_open]
+            if (data.error) [curly_open]
+              this.setState([curly_open] erro: data.error [curly_close]);
+            [curly_close]
+          [curly_close]);
+        [curly_close]
+      [curly_close])
+      .catch(erro =&gt; this.setState([curly_open] erro: erro [curly_close]));
+
+    event.preventDefault();
+  [curly_close];
+[curly_close]
+
+export default EditarSpoiler;</code></pre>
+<ul>
+<li><b>Linha 31</b>. Ao entrar na página de edição, o usuário deve ver os dados do recurso selecionado na listagem principal para que a partir deles possa realizar as alterações que deseja. Portanto, ao iniciar esse componente devemos disparar uma requisição para a API, informando o id do recurso selecionado. Fazemos isso extraindo o id do Spoiler selecionado da URL com <span class='lf-badge'>this.props.match.params</span>. Com essa informação, usamos a Fetch API para disparar a requisição para a API, preenchendo o atributo spoiler do componente com os dados obtidos ou exibindo uma mensagem genérica de erro de conexão para o usuário, se for esse o caso:
+<pre><code class="js">  componentDidMount() [curly_open]
+    const [curly_open] id [curly_close] = this.props.match.params;
+
+    fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`)
+      .then(data => [curly_open]
+        data.json().then(data => [curly_open]
+          if (data.error) [curly_open]
+            this.setState([curly_open] erro: data.error [curly_close]);
+          [curly_close] else [curly_open]
+            this.setState([curly_open] spoiler: data [curly_close]);
+          [curly_close]
+        [curly_close]);
+      [curly_close])
+      .catch(erro => this.setState([curly_open] erro: erro [curly_close]));
+  [curly_close]</code></pre></li></ul>
+
+</div>

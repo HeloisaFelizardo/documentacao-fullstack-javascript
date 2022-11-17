@@ -1,0 +1,71 @@
+@keyframes pulse { 
+    0%{ box-shadow:0 0 rgba(255,183,78,1); transform:rotateZ(0deg) translateY(0);}
+    6%{ transform:rotateZ(10deg); }
+    12%{ transform:rotateZ(-5deg) translateY(-20px);  }
+    18%{ transform:rotateZ(5deg) translateY(-10px); }
+    24%{ transform:rotateZ(0deg) translateY(0); }
+    33%{ box-shadow:0 0 20px 15px rgba(255,183,78,0); }
+    100%{ box-shadow:0 0 20px 15px rgba(255,183,78,0); }
+}
+.content-area p { margin-top:20px; }
+ul.lf-listagem {font-size: 12px; display: block; line-height: 20px; list-style: none; margin: 0; padding: 0;}
+ul.lf-listagem li{ margin: 10px 0 20px 0; }
+ul.lf-lista-explicacao-listagem { font-size: 12px; list-style: none; padding: 0; margin-top: 0px; }
+ul.lf-lista-explicacao-listagem li { border-bottom: 1px solid #eff0f1; }
+.listagem strong { color: #0F8593; }
+.badge { font-family: monospace;  padding: 0.3em;  background-color: #d9f5f9;  color: #0f8593;  border-radius: 4px;  font-style: normal; }
+.lf-badge { background-color: #d9f5f9;  border-radius: 4px;  color: #0f8593;  font-family: monospace;  font-style: normal; padding: 0.3em; }
+figure { text-align: center; }
+.lf-strong {font-weight: bold;}
+.lf-secao { border: 1px solid #d1d1d1; border-top: 2px solid #7bac3b; margin-top: 50px; padding-left: 25px; padding-right: 25px; }
+.lf-secao h3 { border-bottom: 1px solid #d1d1d1 !important; display: block !important; font-size: 1.3em; margin-top: 25px !important; padding-bottom: 15px; }
+.btn-ir-cod-font { width: 264px; font-size: 15px; display: block; text-decoration: none; text-align: center; background-color: #ffb74e; color: #733e31; padding: 15px 0; margin: 30px auto 30px; border-radius: 40px; transition: all .2s ease 0s; font-family: 'Raleway', sans-serif; font-weight: 600; }
+.btn-ir-cod-font.pulse {animation: pulse 3s infinite;}
+.btn-ir-cod-font.pulse:hover {animation: none;}
+/*.lf-box-descubra-mais { background-color: #0AC5D4; padding: 17px 30px; color: #fff; text-align: center; margin: 15px 5px 20px 0; font-size: 16px; font-family: 'Montserrat', sans-serif; font-weight: 500; border-radius: 6px; text-decoration: none; border-bottom: 0; display: inline-block; line-height: 24px; }*/
+.lf-btn-projetos-action 
+{ 
+    padding: 8px 25px;
+    color: #5f5f5f;
+    text-align: center;
+    margin: 0 5px 0 0;
+    font-size: inherit;
+    font-family: 'Montserrat', sans-serif;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid #d6d6d6;
+}
+.lf-btn-projetos-action:hover
+{
+    color:#82bd35;
+}
+.btn-projeto-actions
+{
+    display:block;
+    margin: 0px 0 26px 0;
+}
+.lf-box-descubra-mais img 
+{
+    width: 25px;
+    padding-right: 15px;
+}
+.lf-box-descubra-mais p
+{
+    margin: 0;
+}
+.lf-box-descubra-mais 
+{
+    background-color: #0ac5d4;
+    padding: 15px 30px;
+    color: #fff;
+    margin: 15px 5px 20px 0;
+    font-size: 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    border-radius: 6px;
+    text-decoration: none;
+    border-bottom: 0;
+    display: inline-flex;
+    line-height: 21px;
+    align-items: center;
+}

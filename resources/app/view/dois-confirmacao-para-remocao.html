@@ -1,0 +1,334 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Confirmação para remoção de um Spoiler
+</h2>
+<div class="content-area">
+<p>Nesse momento precisamos criar o componente que será responsável pela deleção
+de um spoiler da nossa aplicação quando selecionado. Contudo, uma mensagem de
+confirmação da deleção
+deve ser exibida ao usuário antes do envio da requisição para ter certeza
+que o usuário não clicou por engano em deletar.</p>
+
+<h3>Visão Geral</h3>
+
+<p>
+    A parte que corresponde a interação com o banco de dados é de responsabilidade
+    do web service com o qual estamos trabalhando, no que toca a interface de
+    usuário enviaremos uma requisição de método HTTP DELETE para o endpoint da API
+    <span class="lf-badge">/api/spoiler/:id</span> onde ":id" deve ser o código
+    de identificação do spoiler. Para isso utilizaremos a função
+    <span class="lf-badge">fetch</span> do JavaScript que nos permite realizar
+    requisições HTTP de forma assíncrona, como mostra o exemplo abaixo:
+</p>
+
+<pre><code class="lang-js">fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`)
+    .then(data => this.setState([curly_open] data [curly_close]))
+    .catch(err => this.setState([curly_open] err [curly_close]));</code></pre>
+
+<p>
+    Também é preciso realizar um tratamento de erros para evitar que a aplicação
+    quebre por algum problema na aplicação do servidor, precisamos
+    desenvolver o evento de deleção para disparar a requisição HTTP quando o
+    botão de excluir for clicado. Como estamos tratando de um arquivo jsx, também
+    precisamos montar a estrutura do componente que precisa ser enviado como
+    argumento de <span class="lf-bagde">render</span>.
+</p>
+
+
+<h3>Na prática</h3>
+
+<p>
+    Primeiramente criaremos o arquivo <span class='lf-badge'>ConfirmarRemoverSpoiler.jsx</span> na pasta de
+    componentes do nosso projeto. Nesse arquivo começaremos importando as
+    classes do React necessárias para a criação do nosso componente, iremos declarar
+    seu construtor, o método responsável por tratar erros, o método que será
+    responsável por carregar os dados dos spoilers, o
+    método render e, por fim, o método que enviará a requisição delete:
+</p>
+
+<pre><code class="lang-js">import React, [curly_open] Component [curly_close] from 'react';
+import [curly_open] Redirect [curly_close] from 'react-router-dom';
+
+class ConfirmarRemoverSpoiler extends Component [curly_open]
+    constructor(props) [curly_open]
+        super(props);
+
+        this.state = [curly_open]
+            spoiler: [curly_open][curly_close],
+            erro: null,
+            redirect: false
+        [curly_close];
+    [curly_close]
+
+    exibeErro() [curly_open]
+        const [curly_open] erro [curly_close] = this.state;
+
+        if (erro) [curly_open]
+            return (
+                &lt;div className="alert alert-danger" role="alert"&gt;
+                    Erro de conexão com o servidor
+                &lt;/div&gt;
+            );
+        [curly_close]
+    [curly_close]
+
+    componentDidMount() [curly_open]
+        const [curly_open] id [curly_close] = this.props.match.params;
+
+        fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`)
+            .then(data =&gt; [curly_open]
+                data.json().then(data =&gt; [curly_open]
+                    if (data.error) [curly_open]
+                        this.setState([curly_open] erro: data.error [curly_close]);
+                    [curly_close] else [curly_open]
+                        this.setState([curly_open] spoiler: data [curly_close]);
+                    [curly_close]
+                [curly_close]);
+            [curly_close])
+            .catch(erro =&gt; this.setState([curly_open] erro: erro [curly_close]));
+    [curly_close]
+
+    render() [curly_open]
+        const [curly_open] redirect [curly_close] = this.state;
+
+        if (redirect) [curly_open]
+            return &lt;Redirect to="/" /&gt;;
+        [curly_close] else [curly_open]
+            return (
+                &lt;div className="card"&gt;
+                    &lt;h5 className="card-header"&gt;[curly_open]this.state.spoiler.titulo[curly_close]&lt;/h5&gt;
+                    &lt;div className="card-body"&gt;
+                        [curly_open]this.exibeErro()[curly_close]
+                        &lt;p&gt;
+                            Tem certeza que deseja remover esse Spoiler? As
+                            pessoas podem sentir falta dele :/
+                        &lt;/p&gt;
+                        &lt;blockquote className="blockquote text-center"&gt;
+                            &lt;p className="mb-0"&gt;
+                                [curly_open]this.state.spoiler.descricao[curly_close]
+                            &lt;/p&gt;
+                            &lt;footer className="blockquote-footer"&gt;
+                                [curly_open]this.state.spoiler.espoliador[curly_close][curly_open]' '[curly_close]
+                                &lt;cite title=[curly_open]this.state.spoiler.titulo[curly_close]&gt;
+                                    [curly_open]this.state.spoiler.titulo[curly_close]
+                                &lt;/cite&gt;
+                            &lt;/footer&gt;
+                        &lt;/blockquote&gt;
+                        &lt;button
+                            className="btn btn-danger btn-block"
+                            role="button"
+                            onClick=[curly_open]this.handleClick[curly_close]
+                        &gt;
+                            Remover
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            );
+        [curly_close]
+    [curly_close]
+
+    handleClick = event =&gt; [curly_open]
+        const [curly_open] id [curly_close] = this.props.match.params;
+
+        fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`, [curly_open]
+            method: 'delete'
+        [curly_close])
+            .then(data =&gt; [curly_open]
+                if (data.ok) [curly_open]
+                    this.setState([curly_open] redirect: true [curly_close]);
+                [curly_close] else [curly_open]
+                    data.json().then(data =&gt; [curly_open]
+                        if (data.error) [curly_open]
+                            this.setState([curly_open] erro: data.error [curly_close]);
+                        [curly_close]
+                    [curly_close]);
+                [curly_close]
+            [curly_close])
+            .catch(erro =&gt; this.setState([curly_open] erro: erro [curly_close]));
+
+        event.preventDefault();
+    [curly_close];
+[curly_close]
+
+export default ConfirmarRemoverSpoiler;
+</code>
+</pre>
+<p>
+    Vejamos passo a passo como o código acima foi escrito e qual o propósito das
+    linhas que implementam sua principal funcionalidade:
+</p>
+<ul>
+    <li>
+        <span class="lf-strong">Linhas 1 e 2</span>: Realizamos as importações
+        necessárias ao componente:
+        <pre><code class="lang-js">import React, [curly_open] Component [curly_close] from "react";
+import [curly_open] Redirect [curly_close] from "react-router-dom";</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linha 4</span>: declaramos a classe do nosso
+        componente, que deve extender
+        da classe <span class='lf-badge'>Component</span>:
+        <pre><code class="lang-js">class ConfirmarRemoverSpoiler extends Component [curly_open]</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linhas 5 a 13</span>: criamos o construtor do
+        componente <span class='lf-badge'>ConfirmarRemoverSpoiler</span>, que recebe as propriedades como
+        parâmetro <span class='lf-badge'>props</span>. Executamos o construtor da classe mãe passando-lhe
+        props como parâmetro. Por fim acrescentamos ao estado do componente
+        (this.state) um objeto com os atributos spoiler, erro e redirect:
+
+        <pre><code class="lang-js">constructor(props) [curly_open]
+    super(props);
+
+    this.state = [curly_open]
+        spoiler: [curly_open][curly_close],
+        erro: null,
+        redirect: false
+    [curly_close];
+[curly_close]</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linhas 15 a 25</span>: criamos o método <span class='lf-badge'>exibeErro</span>
+        que é responsável por verificar se ocorreu algum erro durante a obtenção
+        dos dados e se houver informar ao usuário que houve um problema no
+        servidor:
+
+        <pre><code class="lang-js">exibeErro() [curly_open]
+    const [curly_open] erro [curly_close] = this.state;
+
+    if (erro) [curly_open]
+        return (
+            &lt;div className="alert alert-danger" role="alert"&gt;
+                Erro de conexão com o servidor
+            &lt;/div&gt;
+        );
+    [curly_close]
+[curly_close]</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linhas 27 a 41</span>: declaramos o método
+        componentDidMount que é executado quando o componente precisa ser
+        renderizado no DOM. Esse método será responsável por carregar os dados do
+        spoiler no componente da tela de confirmação de exclusão. O método
+        <span class='lf-badge'>componentDidMount</span> armazena o id do spoiler dos parâmetros da props em uma
+        constante e utiliza esse id
+        para enviar uma requisição GET ao endpoint /api/spoilers/:id
+        através da função fetch.<br>
+        Como fetch retorna uma Promise, declaramos um then e um catch para
+        tratar a resposta em caso de sucesso ou erro e adicionamos os dados do
+        spoiler ou do erro ao state do componente. <br>
+        Passamos como parâmetro de then uma função que receberá os dados da
+        resposta como parâmetro e os converterá para o formato JSON através do
+        método json(). Este método também retorna uma Promise, então definimos em
+        outro then que quando a Promise resolver faremos uma verificação se há
+        algum atributo de nome erro. Se houver ele será adicionado ao state no atributo erro, se não
+        houver então os dados serão adicionados ao atributo spoiler de state:
+
+        <pre><code class="lang-js">componentDidMount() [curly_open]
+    const [curly_open] id [curly_close] = this.props.match.params;
+
+    fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`)
+        .then(data => [curly_open]
+            data.json().then(data => [curly_open]
+                if (data.error) [curly_open]
+                    this.setState([curly_open] erro: data.error [curly_close]);
+                [curly_close] else [curly_open]
+                    this.setState([curly_open] spoiler: data [curly_close]);
+                [curly_close]
+            [curly_close]);
+        [curly_close])
+        .catch(erro => this.setState([curly_open] erro: erro [curly_close]));
+[curly_close]</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linhas 43 a 80</span>: Nesse momento declararemos a estrutura JSX do componente como retorno
+        do método <span class='lf-badge'>render()</span>. Grande parte do código abaixo é a estrutura do
+        componente feita com HTML e as classes do Bootstrap, mas o que devemos
+        nos ater são os trechos nos quais utilizamos os atributos do componente
+        para compor as informações na página:
+
+        <pre><code class="lang-js">render() [curly_open]
+    const [curly_open] redirect [curly_close] = this.state;
+
+    if (redirect) [curly_open]
+        return &lt;Redirect to="/" /&gt;;
+    [curly_close] else [curly_open]
+        return (
+            &lt;div className="card"&gt;
+                &lt;h5 className="card-header"&gt;[curly_open]this.state.spoiler.titulo[curly_close]&lt;/h5&gt;
+                &lt;div className="card-body"&gt;
+                    [curly_open]this.exibeErro()[curly_close]
+                    &lt;p&gt;
+                        Tem certeza que deseja remover esse Spoiler? As
+                        pessoas podem sentir falta dele :/
+                    &lt;/p&gt;
+                    &lt;blockquote className="blockquote text-center"&gt;
+                        &lt;p className="mb-0"&gt;
+                            [curly_open]this.state.spoiler.descricao[curly_close]
+                        &lt;/p&gt;
+                        &lt;footer className="blockquote-footer"&gt;
+                            [curly_open]this.state.spoiler.espoliador[curly_close][curly_open]' '[curly_close]
+                            &lt;cite title=[curly_open]this.state.spoiler.titulo[curly_close]&gt;
+                                [curly_open]this.state.spoiler.titulo[curly_close]
+                            &lt;/cite&gt;
+                        &lt;/footer&gt;
+                    &lt;/blockquote&gt;
+                    &lt;button
+                        className="btn btn-danger btn-block"
+                        role="button"
+                        onClick=[curly_open]this.handleClick[curly_close]
+                    &gt;
+                        Remover
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        );
+    [curly_close]
+[curly_close]</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linhas 82 a 103</span>: Agora declaramos o método
+        handleClick, este é um método do react que é
+        executado sempre que o botão de confirmação da exclusão for clicado. <br>
+        Ele irá armazenar em uma constante o id do spoiler dentre os parâmetros
+        de props e enviar uma requisição do verbo DELETE ao endpoint adequado da
+        API. <br>
+        Como fetch retorna uma Promise executamos então os métodos then e
+        catch. Em catch passamos uma função que irá adicionar erro ao state do
+        componente. Em then passamos uma função que verificará se o atributo
+        ok de data é verdadeiro, se for irá definir redirect: true ao state do
+        componente. Caso data.ok seja falso iremos executar o método json() de
+        data e seu método then, dentro do qual passamos uma função que verifica
+        se data.error existe e, se existir, irá adicionar este atributo ao state
+        do componente.
+
+        <pre><code class="lang-js">handleClick = event => [curly_open]
+    const [curly_open] id [curly_close] = this.props.match.params;
+
+    fetch(`http://localhost:3000/api/spoilers/$[curly_open]id[curly_close]`, [curly_open]
+        method: 'delete'
+    [curly_close])
+        .then(data => [curly_open]
+            if (data.ok) [curly_open]
+                this.setState([curly_open] redirect: true [curly_close]);
+            [curly_close] else [curly_open]
+                data.json().then(data => [curly_open]
+                    if (data.error) [curly_open]
+                        this.setState([curly_open] erro: data.error [curly_close]);
+                    [curly_close]
+                [curly_close]);
+            [curly_close]
+        [curly_close])
+        .catch(erro => this.setState([curly_open] erro: erro [curly_close]));
+
+    event.preventDefault();
+[curly_close];</code></pre>
+    </li>
+    <li>
+        <span class="lf-strong">Linha 105</span>: por fim exportamos a classe
+        ConfirmarRemoverSpoiler para que o componente possa ser usado pela
+        aplicação.
+    </li>
+</ul>
+
+</div>

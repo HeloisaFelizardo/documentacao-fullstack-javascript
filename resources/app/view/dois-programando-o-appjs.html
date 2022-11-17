@@ -1,0 +1,89 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Programando o App.js
+</h2>
+<div class="content-area">
+<p>Comumente uma aplicação React possui um componente principal chamado App, sob o qual criamos todos os demais.</p>
+
+<h3>Visão geral</h3>
+<p>O componente App contém a base para o sistema de roteamento da aplicação. Uma rota conecta uma URL a um componente.</p>
+
+<h3>Na prática</h3>
+
+<p>Vejamos o código do componente App que criamos para a aplicação de Spoilers:</p>
+
+<pre><code class="js">import React, [curly_open] Component [curly_close] from "react";
+import ListarSpoiler from "./components/spoilers/ListarSpoiler";
+import CriarSpoiler from "./components/spoilers/CriarSpoiler";
+import EditarSpoiler from "./components/spoilers/EditarSpoiler";
+import ConfirmarRemoverSpoiler from "./components/spoilers/ConfirmarRemoverSpoiler";
+import [curly_open] BrowserRouter, Route, Link [curly_close] from "react-router-dom";
+import "./App.css";
+
+class App extends Component [curly_open]
+  render() [curly_open]
+    return (
+      &lt;BrowserRouter&gt;
+        &lt;div&gt;
+          &lt;div className="jumbotron jumbotron-fluid"&gt;
+            &lt;div className="container"&gt;
+              &lt;Link to="/"&gt;
+                &lt;h1 className="display-4"&gt;#Spoilers&lt;/h1&gt;
+              &lt;/Link&gt;
+              &lt;p className="lead"&gt;
+                Não se preocupe, tudo aqui é brincadeira. Ou não :)
+              &lt;/p&gt;
+              &lt;Link to="/criar" className="btn btn-light"&gt;
+                Criar
+              &lt;/Link&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div className="container"&gt;
+            &lt;div className="row justify-content-md-center"&gt;
+              &lt;main className="col-xl-4" role="main"&gt;
+                &lt;Route path="/" exact component=[curly_open]ListarSpoiler[curly_close] /&gt;
+                &lt;Route path="/criar/" component=[curly_open]CriarSpoiler[curly_close] /&gt;
+                &lt;Route path="/editar/:id" component=[curly_open]EditarSpoiler[curly_close] /&gt;
+                &lt;Route
+                  path="/remover/:id"
+                  component=[curly_open]ConfirmarRemoverSpoiler[curly_close]
+                /&gt;
+              &lt;/main&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/BrowserRouter&gt;
+    );
+  [curly_close]
+[curly_close]
+
+export default App;</code></pre>
+
+<ul><li><b>Linha 12</b>: O objeto <span class='lf-badge'>BrowserRouter</span> utiliza a API history do HTML 5, em resumo os eventos pushState, replaceState e popState para manter em sincronia ambas a página e URL:
+<pre><code class="js">&lt;BrowserRouter&gt;
+...
+&lt;/BrowserRouter&gt;
+</code></pre></li>
+
+<li><b>Linha 16</b>: O objeto Link substitui o elemento a do HTML proporcionando navegação sem recarregar a página, tal qual é necessário para uma SPA. Nesse componente utilizamos o atributo to em alusão ao href. Em to usamos o nome da rota para a qual desejamos direcionar o usuário:
+<pre><code class="js">&lt;Link to="/"&gt;
+&lt;h1 className="display-4"&gt;#Spoilers&lt;/h1&gt;
+&lt;/Link&gt;
+&lt;p className="lead"&gt;
+Não se preocupe, tudo aqui é brincadeira. Ou não :)
+&lt;/p&gt;
+&lt;Link to="/criar" className="btn btn-light"&gt;
+Criar
+&lt;/Link&gt;
+</code></pre></li>
+
+<li><b>Linha 30</b>: O componente Route é responsável por apresentar uma página, caso a URL atual corresponda ao valor declarado no atributo path da rota. Uma vez que cada rota aponta para um componente, assim que seja acessada uma URL que corresponda ao atributo path da rota, o mesmo é renderizado. A URL atual pode ser acessada na propriedade location do componente.
+
+<p>Em alguns casos podemos desejar acessar um parâmetro na URL, algo muito comum quando lidamos com uma API RESTful. Nas rotas editar e remover utilizamos o parâmetro id para identificar o recurso que será processado pelos seus respectivos componentes. Dentro desses componentes, utilizamos a propriedade match para acessar o parâmetro, assim como vimos em casos anteriores:</p>
+<pre><code class="js">&lt;Route path="/" exact component=[curly_open]ListarSpoiler[curly_close] /&gt;
+&lt;Route path="/criar/" component=[curly_open]CriarSpoiler[curly_close] /&gt;
+&lt;Route path="/editar/:id" component=[curly_open]EditarSpoiler[curly_close] /&gt;
+&lt;Route path="/remover/:id" component=[curly_open]ConfirmarRemoverSpoiler[curly_close]
+/&gt;&lt;/code&gt;
+</pre></li></ul>
+</div>

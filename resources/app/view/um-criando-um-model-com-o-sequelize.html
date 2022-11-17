@@ -1,0 +1,138 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Criando um Model com o Sequelize
+</h2>
+<div class="content-area">
+<p>O Sequelize dispõe de uma API de alto nível que nos permite não apenas
+acessar o banco de dados, mas também realizar mapeamento objeto/relacional, bem
+como validar se um determinado modelo foi preenchido corretamente na aplicação.
+Veremos aqui como utilizar essa API e a simplicidade como isso pode ser feito.</p>
+
+<h3>Visão geral</h3>
+
+<p>O principal dado que será manipulado pela aplicação é o spoiler. Dessa forma,
+na camada de modelo devemos criar essa entidade, declarando quais são as suas
+propriedades, o tipo de dado que cada uma delas vai receber e por quais
+critérios podemos verificar se uma instância desse modelo foi corretamente
+inicializada na aplicação. Todos esses passos podem ser dados de uma única vez
+utilizando a API do Sequelize e o método <span class='lf-badge'><b>define</b></span>,
+que internamente realizará a configuração do modelo e de suas propriedades para
+validação, de acordo com os parâmetros fornecidos pelo programador, e retornará
+uma instância capaz de persistir essa entidade no banco de dados.</p>
+
+<h3>Na prática</h3>
+
+<p>No código a seguir, que comentamos passo a passo nesta seção, criamos o
+modelo spoiler, que será utilizado para armazenamento e manipulação dos dados
+armazenados na tabela de nome spoilers:</p>
+
+<pre><code class="js">  const Sequelize = require("sequelize");
+  const sequelize = require("../database/database");
+   
+  const Spoiler = sequelize.define("spoiler", [curly_open]
+    id: [curly_open]
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: Sequelize.INTEGER
+    [curly_close],
+    titulo: [curly_open]
+      allowNull: false,
+      type: Sequelize.STRING(255),
+      validate: [curly_open]
+        len: [2, 255]
+      [curly_close]
+    [curly_close],
+    espoliador: [curly_open]
+      allowNull: false,
+      type: Sequelize.STRING(40),
+      validate: [curly_open]
+        len: [2, 40]
+      [curly_close]
+    [curly_close],
+    descricao: [curly_open]
+      allowNull: false,
+      type: Sequelize.STRING(255),
+      validate: [curly_open]
+        len: [2, 255]
+      [curly_close]
+    [curly_close]
+  [curly_close]);
+   
+  module.exports = Spoiler;</code></pre>
+
+<p>Vejamos passo a passo como o código acima foi escrito e qual o propósito das linhas que implementam sua principal funcionalidade.</p>
+
+<ul><li><b>Linhas 1 e 2</b>: Para criar um
+model precisamos importar o módulo Sequelize para acessar a partir dele constantes
+que definiram o tipo de cada coluna no banco de dados. Além disso, precisamos
+da instância do Sequelize que configuramos no módulo /src/database/database
+para ter acesso a API que nos permitirá criar o model. Portanto, nesse arquivo
+as primeiras instruções são as que se destinam a importação desses módulos:
+
+<pre><code class="js">  const Sequelize = require("sequelize");
+  const sequelize = require("../database/database");</code></pre>
+</li>
+<li><b>Linha 4</b>: O método <span class='lf-badge'><b>define</b></span> descreve como um model deve ser
+mapeado para uma tabela no banco de dados e vice-versa. Esse método recebe dois
+parâmetros, sendo o primeiro deles uma string utilizada para nomear a tabela. O
+segundo argumento é um objeto que contém em suas propriedades as instruções de
+como cada coluna na tabela em questão deve ser criada:
+
+<pre><code class="js">const Spoiler = sequelize.define("spoiler", [curly_open] … [curly_close]);</code></pre>
+</li></ul>
+ 
+
+<p>Além de realizar o mapeamento objeto/relacional, o Sequelize também nos
+permite descrever como o model criado a partir do método define será validado.
+Para isso usamos a propriedade <span class='lf-badge'><b>validade</b></span>
+na configuração das propriedades do model.</p>
+
+<p>Por exemplo, para definir que um campo deverá ser preenchido como um
+texto de no mínimo dois caracteres e no máximo quarenta, como é o caso de
+espoliador, podemos realizar a seguinte configuração:</p>
+
+<pre><code class="js">  validate: [curly_open]
+    len: [2, 40]
+  [curly_close]</code></pre>
+
+  <h3>Utilizando validações</h3>
+
+<p>Em sua versão atual o Sequelize possui suporte a um amplo número de
+validações nativamente, incluindo números, textos, texto formatado como
+endereços IPs e de e-mail, datas, cartão de crédito e muitos outros disponíveis
+em sua documentação oficial. É possível ainda criar funções de validação
+customizadas. A seguir temos um exemplo de como criar uma função de validação
+que verifica se um número informado é par:</p>
+
+<pre><code class="js">  validate: [curly_open]
+    isPar(numero) [curly_open]
+      if (parseInt(numero) % 2 != 0) [curly_open]
+        throw new Error("Apenas números pares são permitidos!");
+      [curly_close]
+    [curly_close]
+  [curly_close]</code></pre>
+
+<h3>Removendo campos padrão</h3>
+
+<p>Ao criar um model utilizando o Sequelize notamos que algumas colunas são
+adicionais às que definimos por padrão, como <span class='lf-badge'><b>createdAt</b></span>, <span class='lf-badge'><b>updatedAt</b></span> e <span class='lf-badge'><b>deletedAt</b></span>. Caso esses campos não sejam
+desejados, podemos atribuir o valor <span class='lf-badge'><b>false</b></span>
+para as propriedades homônimas no objeto que define as configurações do model.
+Abaixo temos um exemplo:</p>
+
+<pre><code class="js">  const Spoiler = sequelize.define("spoiler", [curly_open]
+    
+  [curly_close],
+  [curly_open]
+    createdAt: false,
+    updatedAt: false,
+    deletedAt: false
+  [curly_close]);</code></pre>
+
+<p>Observe no código acima que as colunas que não desejamos criar foram
+informadas em um segundo objeto, passado como terceiro parâmetro para o método
+define.</p>
+
+
+</div>

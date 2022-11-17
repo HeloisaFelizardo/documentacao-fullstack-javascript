@@ -1,0 +1,173 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Listagem de Spoilers
+</h2>
+<div class="content-area">
+<p>A página de listagem de Spoilers é primeira funcionalidade utiliza pelo usuário. Nela se concentram todas as demais ações de criar, bem como editar e remover um Spoiler já cadastrado. </p>
+
+<h3>Visão geral </h3>
+
+<p>Listar um Spoiler consiste em realizar uma requisição para a API obtendo, em caso de sucesso, um array de Spoilers. Esses dados devem ser iterados e a partir deles são apresentados cards para o usuário na página, conforme a <span class='lf-strong'>Figura 1</span>.</p>
+
+<figure><img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/fig1.png" alt="Listagem de Spoilers"><figcaption><b>Figura 1</b>. Listagem de Spoilers</figcaption></figure>
+<p>Para fazer essa listagem devemos utilizar apenas JavaScript, uma vez que o JSX não dispõe de facilidades presentes em gerenciadores de template</p> 
+<h3>Na prática</h3>
+
+<p>Vejamos quais os passos para implementar essa funcionalidade:</p>
+
+<pre><code class="js">import React, [curly_open] Component [curly_close] from "react";
+import robot from "./../../assets/robot.png";
+import [curly_open] Link [curly_close] from "react-router-dom";
+
+class ListarSpoiler extends Component [curly_open]
+  constructor(props) [curly_open]
+    super(props);
+
+    this.state = [curly_open]
+      spoilers: [],
+      erro: null
+    [curly_close];
+  [curly_close]
+
+  componentDidMount() [curly_open]
+    fetch(`http://localhost:3000/api/spoilers`)
+      .then(spoilers =&gt;
+        spoilers.json().then(spoilers =&gt; this.setState([curly_open] spoilers [curly_close]))
+      )
+      .catch(erro =&gt; this.setState([curly_open] erro [curly_close]));
+  [curly_close]
+
+  exibeErro() [curly_open]
+    const [curly_open] erro [curly_close] = this.state;
+
+    if (erro) [curly_open]
+      return (
+        &lt;div className="alert alert-danger" role="alert"&gt;
+          Erro de conexão com o servidor
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]
+
+  exibeSpoilers() [curly_open]
+    const [curly_open] spoilers [curly_close] = this.state;
+
+    if (spoilers && spoilers.length) [curly_open]
+      return spoilers.map((item, indice) =&gt; (
+        &lt;div key=[curly_open]indice[curly_close] className="card mb-4"&gt;
+          &lt;h5 className="card-header"&gt;[curly_open]item.espoliador[curly_close]&lt;/h5&gt;
+          &lt;div className="card-body"&gt;
+            &lt;div className="media"&gt;
+              &lt;img className="mr-3" src=[curly_open]robot[curly_close] alt="Spoiler" /&gt;
+              &lt;div className="media-body"&gt;
+                &lt;h5 className="mt-0 mb-1"&gt;[curly_open]item.titulo[curly_close]&lt;/h5&gt;
+                &lt;p&gt;[curly_open]item.descricao[curly_close]&lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div className="text-right"&gt;
+              &lt;Link
+                to=[curly_open]`/remover/$[curly_open]item.id[curly_close]`[curly_close]
+                className="btn btn-danger mr-3"
+                role="button"
+              &gt;
+                Remover
+              &lt;/Link&gt;
+              &lt;Link
+                to=[curly_open]`/editar/$[curly_open]item.id[curly_close]`[curly_close]
+                className="btn btn-primary"
+                role="button"
+              &gt;
+                Editar
+              &lt;/Link&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      ));
+    [curly_close] else [curly_open]
+      return (
+        &lt;div className="alert alert-light" role="alert"&gt;
+          Sem spoilers ainda. Faça spoilers não faça guerra :)
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]
+
+  render() [curly_open]
+    return &lt;div&gt;[curly_open]this.exibeErro() || this.exibeSpoilers()[curly_close]&lt;/div&gt;;
+  [curly_close]
+[curly_close]
+
+export default ListarSpoiler;</code></pre>
+
+<ul><li><b>Linha 3</b>: A página de listagem de Spoilers apresenta não apenas os dados de cada um desses recursos para o usuário, mas também concentra algumas das principais operações que podem ser feitas sobre esses dados, como excluí-los ou editá-los. Quando utilizamos o React Router para implementar a navegação da aplicação, devemos utilizar o objeto Link em lugar do elemento a. Esse objeto é exportado no módulo <span class='lf-badge'>react-router-dom</span>, que importamos no trecho de código abaixo:
+<pre><code class="js">import [curly_open] Link [curly_close] from "react-router-dom";</code></pre></li>
+
+<li><b>Linha 15</b>: O método de ciclo de vida <span class='lf-badge'>componentDidMount()</span> é executado sempre que o componente é renderizado no DOM, em algum momento no futuro. Esse método pode ser utilizado, por exemplo, para obter os dados dos Spoilers da API e adicioná-los a propriedade <span class='lf-badge'>spoiler</span> do componente, permitindo que sejam processados no método render() e apresentados para o usuário. Abaixo passamos o array de spoilers para o componente utilizando a sintaxe [curly_open] spoilers [curly_close]. Dessa forma, a propriedade do componente com esse nome terá o seu valor substituído pelo valor da variável spoilers tratada dentro da promise.
+<pre><code class="js">  componentDidMount() [curly_open]
+    fetch(`http://localhost:3000/api/spoilers`)
+      .then(spoilers =>
+        spoilers.json().then(spoilers => this.setState([curly_open] spoilers [curly_close]))
+      )
+      .catch(erro => this.setState([curly_open] erro [curly_close]));
+  [curly_close]</code></pre></li>
+<li><b>Linha 23</b>. O método abaixo exibe uma mensagem de erro genérica para o usuário quando o servidor responde com um erro. Utilizando o recurso destructuring assignment, extraímos o erro gravado no componente no envio do formulário e verificamos se ele é nulo. Caso não seja, retornamos um código JSX para adicionar a mensagem na página:
+<pre><code class="js">  exibeErro() [curly_open]
+    const [curly_open] erro [curly_close] = this.state;
+
+    if (erro) [curly_open]
+      return (
+        &lt;div className="alert alert-danger" role="alert"&gt;
+          Erro de conexão com o servidor
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]</code></pre></li>
+<li><b>Linha 35</b>. No método <span class='lf-badge'>exibeSpoilers()</span> descompactamos o atributo spoilers, presente no objeto state, e verificamos se o mesmo existe e possui elementos. Uma vez que isso não seja verdade, no final deste código encontraremos uma mensagem incentivando novos usuários a participar do aplicativo. Caso contrário, iteramos sobre esse array para exibir todos os recursos recebidos do servidor. Abaixo vemos muito da estrutura do Bootstrap necessária para estruturar a informação da página, mas a lógica se resume a utilizar a função map() para percorrer os dados e apresentá-los. 
+
+<p>Um pouco mais abaixo, na <span class='lf-strong'>Linha 15</span>, vemos presente o componente Link, importado de React Router e que deve ser utilizado em lugar do elemento a para garantir que a navegação não recarregará a página. O atributo to desse componente corresponde ao href do elemento <span class='lf-badge'>a</span>:</p> 
+<pre><code class="js">  exibeSpoilers() [curly_open]
+    const [curly_open] spoilers [curly_close] = this.state;
+
+    if (spoilers && spoilers.length) [curly_open]
+      return spoilers.map((item, indice) =&gt; (
+        &lt;div key=[curly_open]indice[curly_close] className="card mb-4"&gt;
+          ...
+              &lt;img className="mr-3" src=[curly_open]robot[curly_close] alt="Spoiler" /&gt;
+              &lt;div className="media-body"&gt;
+                &lt;h5 className="mt-0 mb-1"&gt;[curly_open]item.titulo[curly_close]&lt;/h5&gt;
+                &lt;p&gt;[curly_open]item.descricao[curly_close]&lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div className="text-right"&gt;
+              &lt;Link
+                to=[curly_open]`/remover/$[curly_open]item.id[curly_close]`[curly_close]
+                className="btn btn-danger mr-3"
+                role="button"
+              &gt;
+                Remover
+              &lt;/Link&gt;
+              &lt;Link
+                to=[curly_open]`/editar/$[curly_open]item.id[curly_close]`[curly_close]
+                className="btn btn-primary"
+                role="button"
+              &gt;
+                Editar
+              &lt;/Link&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      ));
+    [curly_close] else [curly_open]
+      return (
+        &lt;div className="alert alert-light" role="alert"&gt;
+          Sem spoilers ainda. Faça spoilers não faça guerra :)
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]</code></pre></li>
+<li><b>Linha 78</b>: Com os métodos auxiliares que programamos acima, podemos utilizar dos atalhos lógicos do JavaScript para exibir o conteúdo da página. A expressão vista a seguir significa que caso algo seja retornado por <span class='lf-badge'>exibeErro()</span> exibeSpoilers() não será processada, caso contrário, veremos o último listar todos os Spoilers recebidos do servidor na página:
+<pre><code class="js">  render() [curly_open]
+    return &lt;div&gt;[curly_open]this.exibeErro() || this.exibeSpoilers()[curly_close]&lt;/div&gt;;
+  [curly_close]</code></pre></li></ul>
+
+</div>

@@ -1,0 +1,279 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Criação de Spoilers
+</h2>
+<div class="content-area">
+<p>Ao lidar com uma API RESTful dizemos que um formulário de cadastro é utilizado para criar um recurso no servidor. Nesse momento, são pelo menos três as funções implementadas no componente de formulário, sendo elas manter os estado do componente sincronizado com os inputs, enviar os dados e, caso algo dê errado, exibir uma resposta amigável para o usuário.</p>
+
+<h3>Visão geral</h3>
+
+<p>O estado de um componente deve ser, na cultura das aplicações React, a
+única fonte de verdade. Isso significa dizer que é a partir da alteração do
+estado de um componente que a sua representação na página é modificada. Quando
+lidamos com formulários, essa relação se dá em duas direções, pois quando
+alteramos o valor de um input estamos alterando o estado do componente. Essa
+primeira preocupação vemos resolvida no código abaixo.</p>
+
+<p>Em segundo lugar, o navegador possui uma rotina padrão para o envio de
+um formulário, que é recarregar a página enviando os dados preenchidos como
+texto, isso na maioria dos casos. Em aplicações React é comum que esse não seja
+o comportamento esperado em um formulário. No código abaixo exemplificamos como
+tratar o envio do formulário de forma que possamos permanecer na página, quando
+for necessário exibir uma mensagem de erro, ou redirecionar a navegação para a
+página inicial da aplicação.</p>
+
+<p>O código de envio conta ainda com a adição condicional de conteúdo na
+página. O JSX não é uma linguagem de templates e por essa razão não dispõe de
+certos recursos, como estruturas condicionais, entre outras presentes em
+Template Engines. Por essa razão, devemos nos valer apenas de código JavaScript
+para realizar inclusão de trechos de HTML dinamicamente, algo necessário para,
+por exemplo, incluir mensagens de erro na página se a requisição falhar.</p>
+
+<h3>Na prática</h3>
+
+<p>Vejamos no código abaixo como um formulário de cadastro de um recursos
+pode ser criado com o React:</p>
+
+
+<pre><code class="js">import React, [curly_open] Component [curly_close] from "react";
+import [curly_open] Redirect [curly_close] from "react-router-dom";
+
+class CriarSpoiler extends Component [curly_open]
+  constructor(props) [curly_open]
+    super(props);
+
+    this.state = [curly_open]
+      spoiler: [curly_open]
+        espoliador: "",
+        descricao: "",
+        titulo: ""
+      [curly_close],
+      erro: null,
+      redirect: false
+    [curly_close];
+  [curly_close]
+
+  exibeErro() [curly_open]
+    const [curly_open] erro [curly_close] = this.state;
+
+    if (erro) [curly_open]
+      return (
+        &lt;div className="alert alert-danger" role="alert"&gt;
+          Erro de conexão com o servidor
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]
+
+  render() [curly_open]
+    const [curly_open] redirect [curly_close] = this.state;
+
+    if (redirect) [curly_open]
+      return &lt;Redirect to="/" /&gt;;
+    [curly_close] else [curly_open]
+      return (
+        &lt;form onSubmit=[curly_open]this.handleSubmit[curly_close]&gt;
+          [curly_open]this.exibeErro()[curly_close]
+
+          &lt;fieldset&gt;
+            &lt;legend&gt;Criar Spoiler&lt;/legend&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="espoliador"&gt;Espoliador&lt;/label&gt;
+              &lt;input
+                type="text"
+                className="form-control"
+                id="espoliador"
+                name="espoliador"
+                placeholder="zededeus"
+                minLength="2"
+                maxLength="40"
+                value=[curly_open]this.state.spoiler.espoliador[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+              /&gt;
+            &lt;/div&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="titulo"&gt;Título&lt;/label&gt;
+              &lt;input
+                type="text"
+                className="form-control"
+                id="titulo"
+                name="titulo"
+                aria-describedby="tituloAjuda"
+                placeholder="Hereditário"
+                minLength="2"
+                maxLength="255"
+                value=[curly_open]this.state.spoiler.titulo[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+              /&gt;
+              &lt;small id="tituloAjuda" className="form-text text-muted"&gt;
+                Um título pode ser um filme, série, livro...
+              &lt;/small&gt;
+            &lt;/div&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="descricao"&gt;Descrição&lt;/label&gt;
+              &lt;textarea
+                className="form-control"
+                id="descricao"
+                name="descricao"
+                placeholder="Charlie é Paimon"
+                minLength="2"
+                maxLength="255"
+                value=[curly_open]this.state.spoiler.descricao[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+              /&gt;
+            &lt;/div&gt;
+            &lt;button type="submit" className="btn btn-primary"&gt;
+              Enviar
+            &lt;/button&gt;
+          &lt;/fieldset&gt;
+        &lt;/form&gt;
+      );
+    [curly_close]
+  [curly_close]
+
+  handleInputChange = event =&gt; [curly_open]
+    const target = event.target;
+    const name = target.name;
+    const value = target.value;
+
+    this.setState(prevState =&gt; ([curly_open]
+      spoiler: [curly_open] ...prevState.spoiler, [name]: value [curly_close]
+    [curly_close]));
+  [curly_close];
+
+  handleSubmit = event =&gt; [curly_open]
+    fetch("http://localhost:3000/api/spoilers", [curly_open]
+      method: "post",
+      body: JSON.stringify(this.state.spoiler),
+      headers: [curly_open]
+        "Content-Type": "application/json"
+      [curly_close]
+    [curly_close])
+      .then(data =&gt; [curly_open]
+        if (data.ok) [curly_open]
+          this.setState([curly_open] redirect: true [curly_close]);
+        [curly_close] else [curly_open]
+          data.json().then(data =&gt; [curly_open]
+            if (data.error) [curly_open]
+              this.setState([curly_open] erro: data.error [curly_close]);
+            [curly_close]
+          [curly_close]);
+        [curly_close]
+      [curly_close])
+      .catch(erro =&gt; this.setState([curly_open] erro: erro [curly_close]));
+
+    event.preventDefault();
+  [curly_close];
+[curly_close]
+
+export default CriarSpoiler;</code></pre>
+
+<ul><li><b>Linha 2</b>: Após preencher os campos do formulário e submetê-lo, caso a API os receba e processe com sucesso, o fluxo de navegação deve ser redirecionado para a página principal da aplicação, onde o usuário poderá conferir se o recurso foi criado no servidor conforme esperado. Esse redirecionamento é feito pelo objeto Redirect da biblioteca <span class='lf-badge'>react-router</span> e por essa razão precisamos importá-lo:
+…<pre><code class="js">import [curly_open] Redirect [curly_close] from "react-router-dom";</code></pre></li>
+
+<li><b>Linha 5</b>. No construtor do componente precisamos iniciar seus estados, principalmente informando ao objeto <span class='lf-badge'>spoiler</span> quais são os seus atributos. Dessa forma, será possível conectá-los aos campos do formulário de forma que quando eles forem alterados o estado do componente também será. Isso é importante porque componentes reativos não devem alterar diretamente o DOM, mas fazê-lo indiretamente a partir da alteração do seu estado:
+<pre><code class="js">constructor(props) [curly_open]
+    super(props);
+
+    this.state = [curly_open]
+      spoiler: [curly_open]
+        espoliador: "",
+        descricao: "",
+        titulo: ""
+      [curly_close],
+      erro: null,
+      redirect: false
+    [curly_close];
+  [curly_close]</code></pre>
+</li><li>
+<b>Linha 19</b>. O método abaixo exibe uma mensagem de erro genérica para o usuário quando o servidor responde com um erro. Utilizando o recurso <span class='lf-badge'>destructuring assignment</span>, extraímos o erro gravado no componente no envio do formulário e verificamos se ele é nulo. Caso não seja, retornamos um código JSX para adicionar a mensagem na página:
+<pre><code class="js">  exibeErro() [curly_open]
+    const [curly_open] erro [curly_close] = this.state;
+
+    if (erro) [curly_open]
+      return (
+        &lt;div className="alert alert-danger" role="alert"&gt;
+          Erro de conexão com o servidor
+        &lt;/div&gt;
+      );
+    [curly_close]
+  [curly_close]</code></pre></li>
+<li><b>Linha 31</b>. No método <span class='lf-badge'>render()</span> do componente utilizamos o recurso destructing assignment para extrair o atributo <span class='lf-badge'>redirect</span> presente no estado do componente. Esse booleano determina se a navegação desse ser redirecionada ou não para a página inicial do aplicativo e condicionamos esse evento ao seu valor. Caso o usuário esteja visitando a página pela primeira vez ou algum erro tenha ocorrido durante o envio do formulário, o mesmo será exibido para que o usuário possa preenchê-lo. Note na <span class='lf-strong'>Linha 8</span> que é o formulário quem recebe o evento a ser tratado pelo componente, informado no atributo <span class='lf-badge'>onSubmit</span>.
+
+<p>Um pouco mais abaixo, nas <span class='lf-strong'>Linhas 23 e 24</span> conectamos um campo do formulário ao estado do componente. Isso é feito de duas formas. Primeiro, declaramos que o valor do campo deve ser lido a partir de um atributo do componente. Depois, declaramos um método que trata a sua alteração. Nesse caso, podemos declarar um único método capaz de registrar nos atributos do componente os dados preenchidos nos campos do formulário, visto que ambos compartilham o mesmo nome:</p>
+<pre><code class="js">  render() [curly_open]
+    const [curly_open] redirect [curly_close] = this.state;
+
+    if (redirect) [curly_open]
+      return &lt;Redirect to="/" /&gt;;
+    [curly_close] else [curly_open]
+      return (
+        &lt;form onSubmit=[curly_open]this.handleSubmit[curly_close]&gt;
+          [curly_open]this.exibeErro()[curly_close]
+
+          &lt;fieldset&gt;
+            &lt;legend&gt;Criar Spoiler&lt;/legend&gt;
+            &lt;div className="form-group"&gt;
+              &lt;label htmlFor="espoliador"&gt;Espoliador&lt;/label&gt;
+              &lt;input
+                type="text"
+                className="form-control"
+                id="espoliador"
+                name="espoliador"
+                placeholder="zededeus"
+                minLength="2"
+                maxLength="40"
+                value=[curly_open]this.state.spoiler.espoliador[curly_close]
+                onChange=[curly_open]this.handleInputChange[curly_close]
+              /&gt;
+            &lt;/div&gt;
+            ...
+            &lt;button type="submit" className="btn btn-primary"&gt;
+              Enviar
+            &lt;/button&gt;
+          &lt;/fieldset&gt;
+        &lt;/form&gt;
+      );
+    [curly_close]
+  [curly_close]</code></pre></li>
+<li><b>Linha 97</b>. A função desse tratador de eventos é reconhecer o input a partir do qual o evento onChange() foi disparado. Quando isso acontecer, ele receberá um objeto de evento que contém informações sobre a partir do qual o evento foi emitido, como seu nome e valor atual. Utilizando esses dados, modificamos o estado do componente. A expressão contida na <span class='lf-strong'>Linha 7</span> utiliza o operador rest para modificar apenas o atributo de spoiler que corresponde ao campo alterado no formulário, encontrando esse atributo pelo valor do atributo name no input. Essa “de para” não é feito automaticamente e devemos explicitamente declarar os atributos dessa forma para que o código abaixo funcione como esperado:
+<pre><code class="js">  handleInputChange = event => [curly_open]
+    const target = event.target;
+    const name = target.name;
+    const value = target.value;
+
+    this.setState(prevState => ([curly_open]
+      spoiler: [curly_open] ...prevState.spoiler, [name]: value [curly_close]
+    [curly_close]));
+  [curly_close];</code></pre></li>
+<li><b>Linha 107</b>: No trecho de código abaixo tratamos o envio do formulário. Utilizamos a Fetch API, compatível com a maioria dos navegadores mais modernos, para enviar uma requisição por POST para a API, anexando ao seu corpo os dados preenchidos pelo usuário no formulário de criação de spoilers. Uma vez que esses dados estão contidos no estado do componente nesse momento, podemos utilizar as propriedades do mesmo em lugar de ler os valores diretamente do DOM. É importante informar, conforme vemos na <span class='lf-strong'>Linha 5</span> o cabeçalho "Content-Type": "application/json", pois o padrão para envio de dados da Fetch API é “text/plain” e caso os dados sejam enviados dessa forma a API não conseguirá recebê-los e emitirá erros de validação, pois os valores dos atributos do recurso serão nulos.
+<p>Dentro do primeiro <span class='lf-badge'>then()</span> da promise retornada por <span class='lf-badge'>fetch()</span> verificamos se o código HTTP da requisição foi 200 OK. Caso seja, modificamos o estado do componente para que a navegação seja direcionada para a página inicial da aplicação. Caso contrário, copiamos os dados de erro para o componente, fazendo com que uma mensagem de erro seja exibida. Essa mensagem é adicionada na página pelo método <span class='lf-badge'>exibeErro()</span>. 
+
+<p>O código de requisição pode falhar em dois momentos, sendo um deles por um erro emitido pelo servidor, caso que tratamos acima, ou quando não há conexão com o servidor ou o mesmo não responde. Para esses casos a promise() retornada por fetch() dispõe de um método catch(), onde podemos tratar erros inesperados. Esse tratamento é feito aqui da mesma forma vista anteriormente, adicionando uma mensagem genérica na página a partir da alteração do estado do componente e do atributo erro:</p>
+
+<pre><code class="js">   handleSubmit = event => [curly_open]
+    fetch("http://localhost:3000/api/spoilers", [curly_open]
+      method: "post",
+      body: JSON.stringify(this.state.spoiler),
+      headers: [curly_open]
+        "Content-Type": "application/json"
+      [curly_close]
+    [curly_close])
+      .then(data => [curly_open]
+        if (data.ok) [curly_open]
+          this.setState([curly_open] redirect: true [curly_close]);
+        [curly_close] else [curly_open]
+          data.json().then(data => [curly_open]
+            if (data.error) [curly_open]
+              this.setState([curly_open] erro: data.error [curly_close]);
+            [curly_close]
+          [curly_close]);
+        [curly_close]
+      [curly_close])
+      .catch(erro => this.setState([curly_open] erro: erro [curly_close]));
+
+    event.preventDefault();
+  [curly_close];</code></pre>
+</li></ul>
+
+</div>

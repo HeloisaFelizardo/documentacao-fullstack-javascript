@@ -1,0 +1,114 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Conectando os middlewares as URIs dos recursos com Express.Router
+</h2>
+<div class="content-area">
+<p>Rotear é fazer com que os dados enviados em uma requisição cheguem em um
+certo destino. Para a nossa aplicação, desejamos que esse destino seja um dos
+métodos do controller. Aqui veremos como fazer esse roteamento com o Express
+programando o módulo /src/routes/spoilers.</p>
+
+<h3>Visão geral</h3>
+
+<p>O trabalho de um servidor web pode ser simplificado em receber
+requisições e respondê-las. Um middleware, para o Express, é uma função que
+atua entre esses dois momentos, gerando alguma resposta, encerrando a
+requisição ou passando o controle da mesma para um próximo middleware. Nesse
+sentido, os middlewares executam em fila dentro do ciclo de requisição e
+resposta de acordo com a ordem na qual eles foram declarados, tal qual é
+apresentado na <b>Figura 1</b>.</p>
+
+<figure><img src="https://arquivo.devmedia.com.br/exemplo/fullstack_89/image1.png" alt="Ciclo de execução
+dos middlewares no Express"><figcaption><b>Figura 1</b>. Ciclo de execução
+dos middlewares no Express</figcaption></figure>
+
+<p>Na definição das rotas o que fazemos é vincular um middleware a um certo
+caminho. Uma vez que essa se trata de uma aplicação RESTful, o que faremos aqui
+é vincular os middlewares declarados no controller a URI utilizada para
+identificar o recurso da aplicação, o spoiler.</p>
+
+<h3>Na prática</h3>
+
+<p>Para declarar um middleware necessitamos de uma instância de um objeto
+router. Assim que obtivermos uma instância desse objeto, faremos nele o
+registro dos middlewares que serão executados, de acordo com a requisição feita
+pelo cliente:</p>
+
+<pre><code class="js">  const express = require('express')
+  const controller = require('../controller/spoiler')
+   
+  const router = express.Router()
+   
+  router.get('/spoilers/:id', controller.buscarUm)
+   
+  router.get('/spoilers', controller.buscarTodos)
+   
+  router.post('/spoilers', controller.criar)
+   
+  router.put('/spoilers/:id', controller.atualizar)
+   
+  router.delete('/spoilers/:id', controller.excluir)
+   
+  module.exports = router</code></pre>
+
+<p>Vejamos passo a passo como o código acima foi escrito e qual o propósito das linhas que implementam sua principal funcionalidade.</p>
+
+<ul><li><b>Linhas 1 a 3</b>: Um objeto Router
+pode ser obtido a partir de uma aplicação Express e por isso precisamos
+importar esse módulo. Logo após, importamos também o objeto configurado no
+módulo /src/controller/spoiler para utilizarmos os seus métodos na definição
+das rotas. Por fim, instanciamos um Router, armazenando esse objeto em uma
+constante:
+
+<pre><code class="nonumber js">  const express = require("express");
+
+  const controller = require("../controller/spoiler");
+   
+  const router = express.Router();</code></pre></li>
+
+<li><b>Linhas 6 a 14</b>: A partir desse
+ponto o que fazemos é configurar no objeto Router qual verbo HTTP e URI serão
+utilizados para invocar um determinado método no controller. Perceba que nessas
+declarações, quando precisamos que certo parâmetro esteja presente utilizamos a
+notação <span class='lf-badge'><b>:&lt;nome_do_parâmetro&gt;</b></span>.
+Observe ainda que informamos apenas o nome do método no controller, sem invocá-lo,
+por isso a ausência dos parênteses:
+
+<pre><code class="nonumber js">  router.get("/spoilers/:id", controller.buscarUm);
+   
+  router.get("/spoilers", controller.buscarTodos);
+   
+  router.post("/spoilers", controller.criar);
+   
+  router.put("/spoilers/:id", controller.atualizar);
+   
+  router.delete("/spoilers/:id", controller.excluir);</code></pre>
+</li>
+<li><b>Linha 16</b>: O último passo é
+exportar o objeto Router para ser utilizado pela aplicação:
+
+<pre><code class="nonumber js">module.exports = router;</code></pre></li></ul>
+
+<h3>Configurando o Express para utilizar as rotas</h3>
+
+<p>Uma rota, para o Express, funciona como uma pequena aplicação, limitada
+a execução de um conjunto de middlewares. É através do método <span class='lf-badge'><b>use()</b></span> que notificamos ao Express não
+apenas sobre a existência de um middleware, como também de um Router. Sendo
+assim, após configurar as rotas devemos informar ao Express sobre esse objeto,
+o que pode ser feito da seguinte forma:</p>
+
+<pre><code class="js">  const spoilersRoute = require("./routes/spoilers");
+  app.use("/api", spoilersRoute);</code></pre>
+
+<ul><li><b>Linha 1</b>: spoilersRoute é o
+nome de demos ao objeto exportado pelo módulo /src/routes/spoilers, o qual
+passamos como parâmetro para o método use() do Express na linha seguinte. Note
+que nomeamos essas rotas utilizando o prefixo <span class='lf-badge'><b>/api</b></span>, que será anexado a todas as URIs declaradas no módulo de
+roteamento, formando caminhos como <span class='lf-badge'><b>/api/spoilers</b></span>:
+
+<pre><code class="js">const spoilersRoute = require("./routes/spoilers");
+  app.use("/api", spoilersRoute);</code></pre></li></ul>
+
+<p>Com as rotas da API em funcionamento podemos executar a aplicação.</p>
+
+</div>

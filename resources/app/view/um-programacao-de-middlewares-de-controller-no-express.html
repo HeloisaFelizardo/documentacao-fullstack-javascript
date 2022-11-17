@@ -1,0 +1,303 @@
+
+<h2 class="item-titulo titulo_desc_move">
+    Programação de middlewares de Controller no Express
+</h2>
+<div class="content-area">
+<p>Controller, no contexto dessa aplicação, é o objeto responsável pelo processamento de uma requisição, podendo ele mesmo delegar para outros componentes da aplicação parte ou todo esse processamento. Contudo, na maioria dos casos em que a implementação não requer uma camada de serviço ou é simplificada, é no controller que são declaradas e executadas as regras de negócio.
+</p>
+
+<h3>Visão geral </h3>
+
+<p>Uma aplicação criada com o Express não requer a existência de um controller. No modelo de funcionamento do Express as requisições são processadas em middlewares, de forma a associarmos um middleware a um determinado endpoint da aplicação de forma simplificada:</p>
+
+<pre><code class="js">express().use(‘/api/spoilers/’, (request, response, next) => [curly_open]
+  // Lógica de processamento  
+[curly_close])</code></pre>
+
+<p>Contudo, tendo em vista a boa prática de dividir responsabilidades criaremos um módulo separado da aplicação no qual implementamos as ações a serem realizadas pelo controller e exportamos esse módulo para o restante da aplicação.
+</p>
+<h3>Na prática</h3>
+
+<pre><code class="js">const Spoiler = require('../model/spoiler')
+  const Status = require('http-status')
+   
+  exports.buscarUm = (request, response, next) => [curly_open]
+      const id = request.params.id
+   
+      Spoiler.findById(id).then((spoiler) => [curly_open]
+          if (spoiler) [curly_open]
+              response.send(spoiler)
+          [curly_close] else [curly_open]
+              response.status(Status.NOT_FOUND).send()
+          [curly_close]
+      [curly_close]).catch((error) => next(error))
+  [curly_close]
+   
+  exports.buscarTodos = (request, response, next) => [curly_open]
+      let limite = parseInt(request.query.limite || 0)
+      let pagina = parseInt(request.query.pagina || 0)
+   
+      if (!Number.isInteger(limite) || !Number.isInteger(pagina)) [curly_open]
+          response.status(Status.BAD_REQUEST).send()
+      [curly_close]
+   
+      const ITENS_POR_PAGINA = 10
+   
+      limite = limite > ITENS_POR_PAGINA || limite <= 0 ? ITENS_POR_PAGINA : limite
+      pagina = pagina <= 0 ? 0 : pagina * limite
+   
+      Spoiler.findAll([curly_open] limit: limite, offset: pagina [curly_close]).then((spoilers) => [curly_open]
+          if (spoilers && spoilers.length) [curly_open]
+              response.send(spoilers)
+          [curly_close] else [curly_open]
+              response.status(Status.NOT_FOUND).send()
+          [curly_close]
+      [curly_close]).catch((error) => next(error))
+  [curly_close]
+   
+  exports.criar = (request, response, next) => [curly_open]
+      const titulo = request.body.titulo
+      const espoliador = request.body.espoliador
+      const descricao = request.body.descricao
+   
+      Spoiler.create([curly_open]
+          titulo: titulo,
+          espoliador: espoliador,
+          descricao: descricao
+      [curly_close]).then(() => [curly_open]
+          response.status(Status.CREATED).send()
+      [curly_close]).catch((error) => next(error))
+  [curly_close]
+   
+  exports.atualizar = (request, response, next) => [curly_open]
+      const id = request.params.id
+   
+      const titulo = request.body.titulo
+      const espoliador = request.body.espoliador
+      const descricao = request.body.descricao
+   
+      Spoiler.findById(id).then((spoiler) => [curly_open]
+          if (spoiler) [curly_open]
+              Spoiler.update([curly_open]
+                  titulo: titulo,
+                  espoliador: espoliador,
+                  descricao: descricao
+              [curly_close], [curly_open] where: [curly_open] id: id [curly_close] [curly_close]).then(() => [curly_open]
+                  response.send()
+              [curly_close]).catch((error) => next(error))
+          [curly_close] else [curly_open]
+              response.status(Status.NOT_FOUND).send()
+          [curly_close]
+      [curly_close]).catch((error) => next(error))
+  [curly_close]
+   
+  exports.excluir = (request, response, next) => [curly_open]
+      const id = request.params.id
+   
+      Spoiler.findById(id).then((spoiler) => [curly_open]
+          if (spoiler) [curly_open]
+              Spoiler.destroy([curly_open]
+                  where: [curly_open] id: id [curly_close]
+              [curly_close]).then(() => [curly_open]
+                  response.send()
+              [curly_close]).catch((error) => next(error))
+          [curly_close] else [curly_open]
+              response.status(Status.NOT_FOUND).send()
+          [curly_close]
+      [curly_close]).catch((error) => next(error))
+  [curly_close]</code></pre>
+
+<p>Vejamos passo a passo como o código acima foi escrito e qual o propósito das linhas que implementam sua principal funcionalidade.</p>
+
+<ul><li><b>Linhas 1 e 2</b>: Para programarmos
+o controller que permitirá ao cliente persistir os dados de um spoiler,
+precisamos da instância de modelo do mesmo, a qual criamos no módulo
+/src/model/spoiler.js, bem como do módulo http-status, o qual usaremos para
+retornar para o cliente os códigos HTTP que informam o estado final da
+requisição feita para a API:
+
+<pre><code class="nonumber js">  const Spoiler = require("../model/spoiler");
+  const status = require("http-status"); </code></pre>
+</li>
+
+<li><b>Linhas 4 a 16</b>: O primeiro método
+que criamos no controller busca por um spoiler específico no banco de dados.
+Ele atende as requisições feitas para o endereço GET
+/api/spoilers/&#123id&#125, onde <span class='lf-badge'><b>&#123id&#125</b></span> é o id do spoiler desejado na
+tabela spoilers do banco de dados. Para isso, esse método do controller deve
+obter &#123id&#125 do endereço digitado pelo cliente, o que fazemos utilizando <span class='lf-badge'><b>request.params.id</b></span>. Logo após,
+utilizando o método <span class='lf-badge'><b>findById()</b></span> da
+API do Sequelize enviamos o comando SELECT para o banco de dados, que deverá
+retornar um objeto Spoiler, preenchido com os dados contidos neste registro na
+tabela spoilers. Esse método retornará uma promise, em cujo método <span class='lf-badge'><b>then()</b></span> programamos o que será feito com
+os dados que retornarem da consulta, ao passo que em <span class='lf-badge'><b>catch()</b></span> descrevemos como erros de qualquer natureza, neste
+contexto, serão tratados. Caso o spoiler desejado seja encontrado na tabela,
+retornamos esse objeto com o código <b>HTTP
+200 OK</b>. Em caso de falha, retornamos o código <b>HTTP 404 NOT FOUND</b>: 
+
+<pre><code class="nonumber js">exports.buscarUm = (request, response, next) => [curly_open]
+    const id = request.params.id;
+   
+    Spoiler.findById(id)
+      .then(spoiler => [curly_open]
+        if (spoiler) [curly_open]
+          response.status(status.OK).send(spoiler);
+        [curly_close] else [curly_open]
+          response.status(status.NOT_FOUND).send();
+        [curly_close]
+      [curly_close])
+      .catch(error => next(error));
+  [curly_close];</code></pre>
+</li>
+<li><b>Linhas 18 a 36</b>: No próximo método
+do controller implementamos a funcionalidade de busca paginada na API,
+atendendo ao endereço GET <span class='lf-badge'><b>/api/spoilers/</b></span>.
+Essa é uma paginação simples baseada em cálculo que leva em consideração o
+número de registros desejados por página, que chamamos de <span class='lf-badge'><b>limite</b></span>, e levando em consideração o mesmo e a página desejada pelo
+cliente, definimos a quantidade de registros que devem ser ignorados pelo banco
+de dados quando a instrução SELECT for criada. 
+
+<p>Neste caso, uma vez que estamos utilizando o MySQL como banco de dados,
+essa paginação será baseada no funcionamento da cláusula <b>LIMIT</b>. Via de regra, o cliente poderá escolher a quantidade de
+itens que ele deseja listar em uma página, sendo o valor máximo de itens
+controlado pela constante <span class='lf-badge'><b>ITENS_POR_PAGINA</b></span>
+nesse método, bem como qual página ele deseja listar, informando os parâmetros
+como <span class='lf-strong'><span class='lf-badge'>limite=10&pagina=0</span></span> na URL.
+Tais parâmetros podem ser obtidos do objeto <span class='lf-badge'><b>request</b></span> do middleware a partir de <span class='lf-badge'><b>request.query.limite</b></span> e <span class='lf-badge'><b>request.query.pagina</b></span>.</p>
+
+<p>Na <b>linha 30</b> a busca é
+realizada pelo método <span class='lf-badge'><b>findAll()</b></span>, que
+recebe como parâmetro um objeto utilizado para configurar a paginação do banco
+de dados. Quando esse método encontrar algum registro, uma lista de objetos
+será retornada com o código <span class='lf-badge'><b>HTTP 200 OK</b></span>.
+Caso contrário, uma lista vazia será retornada:</p>
+
+<pre><code class="nonumber js">exports.buscarTodos = (request, response, next) => [curly_open]
+    let limite = parseInt(request.query.limite || 0);
+    let pagina = parseInt(request.query.pagina || 0);
+   
+    if (!Number.isInteger(limite) || !Number.isInteger(pagina)) [curly_open]
+      response.status(status.BAD_REQUEST).send();
+    [curly_close]
+   
+    const ITENS_POR_PAGINA = 10;
+   
+    limite = limite > ITENS_POR_PAGINA || limite <= 0 ? ITENS_POR_PAGINA : limite;
+    pagina = pagina <= 0 ? 0 : pagina * limite;
+   
+    Spoiler.findAll([curly_open] limit: limite, offset: pagina [curly_close])
+      .then(spoilers => [curly_open]
+        response.status(status.OK).send(spoilers);
+      [curly_close])
+      .catch(error => next(error));
+  [curly_close];</code></pre>
+</li>
+<li><b>Linhas 38 a 52:</b> A inserção de um
+novo spoiler no banco de dados é implementada no método <span class='lf-badge'><b>criar()</b></span> do controller, o qual atende as requisições feitas para o
+endereço POST <span class='lf-badge'><b>/api/spoilers/</b></span>. Ao
+disparar essa requisição devemos informar os dados que permitirão a criação de
+um novo recurso no servidor, os quais devem ser no formato JSON e anexados ao
+corpo da requisição. No método do controller, esses dados serão obtidos a
+partir de <span class='lf-badge'><b>request.body</b></span>. 
+
+<p>Na <b>linha 42</b> a persistência do
+spoiler no banco de dados será feita com o método <span class='lf-badge'><b>create</b></span> da API do Sequelize, que recebe como parâmetro o objeto a
+ser persistido e retorna uma promise, assim como nos casos anteriores. Caso a
+gravação ocorra com sucesso, no método <span class='lf-badge'><b>then()</b></span>
+da promise responderemos ao cliente com o código <span class='lf-badge'><b>HTTP 201 CREATED</b></span>. Em caso de erro, passaremos o controle da
+requisição para o middleware de tratamento de erros global, que enviará para o
+cliente os detalhes do erro ocorrido junto com o código <span class='lf-badge'><b>HTTP 500 INTERNAL SERVER ERROR</b></span>:</p>
+
+<pre><code class="nonumber js">exports.criar = (request, response, next) => [curly_open]
+    const titulo = request.body.titulo;
+    const espoliador = request.body.espoliador;
+    const descricao = request.body.descricao;
+   
+    Spoiler.create([curly_open]
+      titulo: titulo,
+      espoliador: espoliador,
+      descricao: descricao
+    [curly_close])
+      .then(() => [curly_open]
+        response.status(status.CREATED).send();
+      [curly_close])
+      .catch(error => next(error));
+  [curly_close];</code></pre>
+</li>
+<li><b>Linhas 54 a 81</b>: A atualização dos
+dados de um spoiler, feita com uma requisição para PUT <span class='lf-badge'><b>/api/spoilers/[curly_open]id[curly_close]</b></span>, possui certa correspondência com a busca por um
+único registro utilizando o seu identificador. Isso é necessário porque devemos
+retornar para o cliente o código <span class='lf-badge'><b>HTTP
+404 NOT FOUND</b></span> quando o recurso que se deseja atualizar não existir no
+servidor. De outra forma, caso o recurso exista, utilizamos o método <span class='lf-badge'><b>update()</b></span> da API do Sequelize para
+atualizar o registro no banco de dados. Esse método recebe dois parâmetros,
+sendo o primeiro utilizado para informar os dados que serão substituídos no
+registro que corresponde ao identificador informado via URL, ao passo que o
+segundo parâmetro deste método informa como esse registro será localizado,
+neste caso, utilizando a cláusula <span class='lf-badge'><b>WHERE</b></span>: 
+
+<pre><code class="nonumber js">exports.atualizar = (request, response, next) => [curly_open]
+    const id = request.params.id;
+   
+    const titulo = request.body.titulo;
+    const espoliador = request.body.espoliador;
+    const descricao = request.body.descricao;
+   
+    Spoiler.findById(id)
+      .then(spoiler => [curly_open]
+        if (spoiler) [curly_open]
+          Spoiler.update(
+            [curly_open]
+              titulo: titulo,
+              espoliador: espoliador,
+              descricao: descricao
+            [curly_close],
+            [curly_open] where: [curly_open] id: id [curly_close] [curly_close]
+          )
+            .then(() => [curly_open]
+              response.status(status.OK).send();
+            [curly_close])
+            .catch(error => next(error));
+        [curly_close] else [curly_open]
+          response.status(status.NOT_FOUND).send();
+        [curly_close]
+      [curly_close])
+      .catch(error => next(error));
+  [curly_close];</code></pre>
+</li>
+<li><b>Linhas 83 a 91</b>: O último método
+presente no controller é onde implementamos a deleção de um recurso. Ele atende
+as requisições feitas para
+/api/spoilers/&#123id&#125, onde <span class='lf-badge'><b>&#123id&#125</b></span> é o identificador do registro que desejamos excluir do banco
+de dados. Aqui, uma vez que estamos implementando uma API RESTful, devemos
+verificar se o recurso que o cliente deseja deletar existe no banco de dados.
+Caso ele não exista, devemos retornar para o cliente o código <span class='lf-badge'><b>HTTP 404 NOT FOUND</b></span> e encerrar a
+requisição. Caso contrário, invocamos o método <span class='lf-badge'><b>destroy</b></span> da API do Sequelize para remover esse registro da tabela
+spoilers. Esse método da API recebe como parâmetro um objeto a partir do qual a
+cláusula WHERE da instrução DELETE será configurada:</p>
+
+<pre><code class="nonumber js">exports.excluir = (request, response, next) => [curly_open]
+    const id = request.params.id;
+   
+    Spoiler.findById(id)
+      .then(spoiler => [curly_open]
+        if (spoiler) [curly_open]
+          Spoiler.destroy([curly_open]
+            where: [curly_open] id: id [curly_close]
+          [curly_close])
+            .then(() => [curly_open]
+              response.status(status.OK).send();
+            [curly_close])
+            .catch(error => next(error));
+        [curly_close] else [curly_open]
+          response.status(status.NOT_FOUND).send();
+        [curly_close]
+      [curly_close])
+      .catch(error => next(error));
+  [curly_close];</code></pre></li></ul>
+
+<p>Embora implementadas as funcionalidades da API, elas ainda não estão
+disponíveis para os clientes, uma vez que ainda não definimos as rotas da
+aplicação. Veremos como realizar esse passo na próxima página.</p>
+
+</div>

@@ -1,0 +1,120 @@
+<h2 class="item-titulo titulo_desc_move">
+    Configuração de banco de dados
+</h2>
+<div class="content-area">
+<p>Por uma questão de boas práticas adicionaremos as configurações de
+acesso ao banco de dados no módulo src/config/config, mantendo-as centralizadas
+de forma que elas sejam fáceis de localizar e, se necessário, modificar.</p>
+
+<h3>Visão geral</h3>
+
+<p>As informações de acesso ao banco de dados costumam mudar de acordo com
+o contexto no qual a mesma é executada. Um exemplo disso é o fato de ser comum
+que equipes de desenvolvimento mantenham mais de uma versão do arquivo de
+configuração de banco de dados, sendo pelo menos uma utilizada para armazenar
+as configurações do banco de dados utilizado durante o desenvolvimento da
+aplicação e a outra para guardar as configurações do banco de dados que será
+acessado pelos clientes. Um dos problemas dessa abordagem é que ela exige um
+cuidado constante da parte dos programadores para que esses arquivos nunca
+sejam sobrescritos durante o envio de algum código para o servidor produção, ou
+a aplicação poderia sair do ar por um erro de conexão com o banco de dados.</p>
+
+<p>Aqui veremos como armazenar essas informações em um único arquivo que
+poderá ser utilizado tanto em desenvolvimento quanto em produção.</p>
+
+<h3>Na prática</h3>
+
+<p>No código abaixo vemos o conteúdo do arquivo <span class='lf-badge'><b>src/config/config.js</b></span>, que consiste de um objeto JavaScript, cujas
+propriedades estão agrupadas nas seções development e production. Em
+development serão configurados os valores que serão utilizados pelos
+programadores que participam do projeto, ao passo que em production temos as
+configurações que deverão ser utilizadas quando o projeto for publicado:</p>
+
+<pre><code class="js">module.exports = [curly_open]
+    development: [curly_open]
+      database: [curly_open]
+        host: "localhost",
+        port: 3306,
+        name: "spoiler",
+        dialect: "mysql",
+        user: "root",
+        password: "123456"
+      [curly_close]
+    [curly_close],
+    production: [curly_open]
+      database: [curly_open]
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT
+      [curly_close]
+    [curly_close]
+  [curly_close];</code></pre>
+
+<p>Vejamos passo a passo como o código acima foi escrito e qual o propósito das linhas que implementam sua principal funcionalidade.</p>
+
+<ul><li><b>Linhas 3 a 10</b>: Aqui temos as
+configurações utilizadas em ambiente de desenvolvimento, que geralmente é o
+computador utilizado pelo programador envolvido no projeto. Os valores nesta
+seção podem ser customizados de acordo com a necessidade do programador: 
+
+<pre><code class="js">database: [curly_open]
+      host: "localhost",
+      port: 3306,
+      name: "spoiler",
+      dialect: "mysql",
+      user: "root",
+      password: "123456"
+[curly_close]</code></pre>
+</li>
+
+<li><b>Linhas 11 a 16</b>: Nesta seção estão
+descritas as configurações que devem ser utilizadas no servidor de produção,
+que é o local onde a aplicação será hospedada. Por convenção, as aplicações
+Node utilizam variáveis de ambiente para determinar como certas informações
+serão configuradas no servidor de produção. Neste caso, ao fazer o deploy da
+aplicação no servidor, esteja certo de que existam no ambiente variáveis com os
+nome <span class='lf-badge'><b>host</b></span> e <span class='lf-badge'><b>port</b></span> e que elas contêm os valores que devem ser utilizados pela
+aplicação para se conectar ao banco de dados: 
+
+<pre><code class="js">production: [curly_open]
+    database: [curly_open]
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT
+    [curly_close]
+[curly_close]</code></pre>
+</li>
+
+<p>Cada sistema operacional possui uma forma específica para declarar
+variáveis de ambiente e persisti-las de alguma forma para que sejam acessíveis
+aos programas executados nele. A título de conhecimento, abaixo vemos alguns
+exemplos que demonstram como realizar essa tarefa a partir dos principais
+terminais disponíveis para Windows, Linux e MacOS:</p>
+
+<h4>PowerShell para
+Windows</h4>
+
+<pre><code class="js">$Env:DB_HOST = "https://dbs1.com.br"</code></pre>
+
+<h4>Bash para MacOS/Linux</h4>
+
+<pre><code class="js">DB_HOST="https://dbs1.com.br"</code></pre>
+
+<p>Uma vez que esses dados tenham sido devidamente configurados com o
+auxílio de um terminal ou alguma outra ferramenta que permite registrar
+variáveis de ambiente, o Node se encarregará de ler essas variáveis de ambiente
+a partir de <span class='lf-badge'><b>process.env.&lt;nome_da_variavel_de_ambiente&gt;</b></span>.</p>
+
+<p>Seguindo a mesma abordagem, quando as informações de conexão com o banco
+de dados necessitarem ser lidas pela aplicação, isso também será feito baseado
+em uma variável de ambiente que determinará o contexto no qual a aplicação está
+sendo executada, se em desenvolvimento ou produção:</p>
+
+<pre><code class="js">const environment = process.env.NODE_ENV || "development";
+const config = require("../config/config.js")[environment];</code></pre>
+
+<p>Uma vez que a variável de ambiente <span class='lf-badge'><b>NODE_ENV</b></span> exista, as informações de conexão com o banco de dados serão
+carregadas de acordo com o seu valor, que deve ser development ou production,
+de acordo com as propriedades do objeto contido no módulo <span class='lf-badge'><b>/src/config/config</b></span>. Em outro caso, consideramos que as informações
+que devem ser utilizadas são aquelas contidas na propriedade development do
+referido objeto.</p>
+
+</div>
