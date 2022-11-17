@@ -1,0 +1,1 @@
+Download all the content in a folder and run the documentacao-fullstack-javascript.exe file
